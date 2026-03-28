@@ -377,6 +377,14 @@
         setActiveBtn(days);
         const stats = await window.Storage.getInsightStats(days);
         window.UI.updateInsightsPage(stats);
+
+        // Kick off Gemini AI summary (non-blocking — shows shimmer then result)
+        if (window.Gemini && stats.totalMeals > 0) {
+          window.UI.showCuratedLoading();
+          window.Gemini.generateCuratedSummary(stats)
+            .then(text => window.UI.renderCuratedSummary(text))
+            .catch(() => window.UI.updateCuratedSummary(stats)); // fallback to template
+        }
       } catch (err) {
         console.error('[Insights] Failed to load stats:', err);
       }
