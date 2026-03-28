@@ -1,6 +1,6 @@
 // analyzer.js — USDA FoodData Central API integration with weight-based nutrition
 
-const USDA_API_KEY = 'DEMO_KEY'; // Free USDA key — 1000 req/hr
+const USDA_API_KEY = 'yGEoZjzKhqdYXlayU1Z7GjCWTF7fNOvcLcMeYjPq'; // Personal USDA key — 1000 req/hr, 30000 req/day
 const USDA_SEARCH  = 'https://api.nal.usda.gov/fdc/v1/foods/search';
 
 // USDA nutrient IDs (stable across all food types)
