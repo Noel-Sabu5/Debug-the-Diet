@@ -168,14 +168,14 @@
       </div>
       <div class="w-full md:w-48">
         <label
-          class="block text-[10px] font-bold tracking-widest uppercase text-on-surface-variant dark:text-neutral-500 mb-2">Date
-          Range</label>
-        <div
-          class="bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 rounded-lg px-4 py-3 flex items-center justify-between cursor-pointer group hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors">
-          <span class="text-sm text-on-surface dark:text-neutral-300">All Time</span>
-          <span
-            class="material-symbols-outlined text-on-surface-variant dark:text-neutral-600 text-sm">calendar_today</span>
-        </div>
+          class="block text-[10px] font-bold tracking-widest uppercase text-on-surface-variant dark:text-neutral-500 mb-2">Date Range</label>
+        <select id="date-range-filter"
+          class="w-full bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 rounded-lg px-4 py-3 text-sm text-on-surface dark:text-neutral-300 outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors appearance-none">
+          <option value="all">All Time</option>
+          <option value="7">Last 7 Days</option>
+          <option value="30">Last 30 Days</option>
+          <option value="90">Last 3 Months</option>
+        </select>
       </div>
       <button id="log-new-btn"
         class="md:ml-auto bg-primary dark:bg-primary-fixed text-white dark:text-on-primary-fixed px-6 py-3 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all active:scale-95 shadow-md shadow-primary/10 dark:shadow-primary-fixed/20">

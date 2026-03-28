@@ -302,26 +302,31 @@
   }
 
   /* ─────────────────────────────────────────────
+  /* ─────────────────────────────────────────────
      HISTORY LOGIC
   ───────────────────────────────────────────── */
   async function initHistory() {
-    try {
-      const meals = await window.Storage.getAllMeals();
-      window.UI.renderHistoryList(meals);
-    } catch (err) {
-      console.error('[History] Failed to load meals:', err);
-      window.UI.renderHistoryList([]); // clears the Loading... placeholder
+    const searchInput   = document.getElementById('history-search');
+    const dateFilter    = document.getElementById('date-range-filter');
+
+    /** Fetch meals respecting current filter state, then render */
+    async function refreshHistory() {
+      try {
+        const days  = dateFilter ? dateFilter.value : 'all';
+        const meals = days === 'all'
+          ? await window.Storage.getAllMeals()
+          : await window.Storage.getMealsSince(Number(days));
+        window.UI.renderHistoryList(meals, searchInput ? searchInput.value : '');
+      } catch (err) {
+        console.error('[History] Failed to load meals:', err);
+        window.UI.renderHistoryList([]);
+      }
     }
 
-    const searchInput = document.getElementById('history-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', async () => {
-        try {
-          const all = await window.Storage.getAllMeals();
-          window.UI.renderHistoryList(all, searchInput.value);
-        } catch (err) { console.error('[History] Search error:', err); }
-      });
-    }
+    await refreshHistory();
+
+    if (searchInput) searchInput.addEventListener('input', refreshHistory);
+    if (dateFilter)  dateFilter.addEventListener('change', refreshHistory);
 
     const clearBtn = document.getElementById('clear-all-btn');
     if (clearBtn) {
@@ -349,12 +354,39 @@
      INSIGHTS LOGIC
   ───────────────────────────────────────────── */
   async function initInsights() {
-    try {
-      const stats = await window.Storage.getInsightStats();
-      window.UI.updateInsightsPage(stats);
-    } catch (err) {
-      console.error('[Insights] Failed to load stats:', err);
+    const btn7  = document.getElementById('period-7');
+    const btn30 = document.getElementById('period-30');
+
+    const activeClass   = ['bg-surface-container-lowest', 'dark:bg-neutral-800', 'shadow-sm', 'text-primary', 'dark:text-primary-fixed'];
+    const inactiveClass = ['text-on-surface-variant', 'dark:text-neutral-400', 'hover:text-on-surface', 'dark:hover:text-neutral-200'];
+
+    function setActiveBtn(activeDays) {
+      [btn7, btn30].forEach(btn => {
+        if (!btn) return;
+        btn.classList.remove(...activeClass, ...inactiveClass);
+        if (Number(btn.id.replace('period-', '')) === activeDays) {
+          btn.classList.add(...activeClass);
+        } else {
+          btn.classList.add(...inactiveClass);
+        }
+      });
     }
+
+    async function loadInsights(days) {
+      try {
+        setActiveBtn(days);
+        const stats = await window.Storage.getInsightStats(days);
+        window.UI.updateInsightsPage(stats);
+      } catch (err) {
+        console.error('[Insights] Failed to load stats:', err);
+      }
+    }
+
+    // Default: last 7 days
+    await loadInsights(7);
+
+    if (btn7)  btn7.addEventListener('click',  () => loadInsights(7));
+    if (btn30) btn30.addEventListener('click', () => loadInsights(30));
   }
 
   /* ─────────────────────────────────────────────

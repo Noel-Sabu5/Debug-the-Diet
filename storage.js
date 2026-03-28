@@ -81,53 +81,65 @@
   }
 
   /**
-   * Compute stats for the Insights page.
-   * Returns same shape as the old localStorage version.
+   * Get meals newer than `days` days ago.
    */
-  async function getInsightStats() {
+  async function getMealsSince(days) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const all   = await getAllMeals();
+    return all.filter(m => new Date(m.date) >= since);
+  }
+
+  /**
+   * Compute stats for the Insights page.
+   * @param {number} days - window size: 7 or 30 (default 7)
+   */
+  async function getInsightStats(days = 7) {
     const all = await getAllMeals();
     if (all.length === 0) {
       return { averageScore: 0, trend: 0, totalMeals: 0, weeklyMeals: [], weeklyAvg: 0, lastWeekAvg: 0, dailyAvgs: [] };
     }
 
     const now      = Date.now();
-    const oneWeek  = 7 * 24 * 60 * 60 * 1000;
-    const twoWeeks = 2 * oneWeek;
+    const windowMs = days * 24 * 60 * 60 * 1000;
+    const prevMs   = windowMs * 2;
 
-    const weeklyMeals   = all.filter(m => now - new Date(m.date).getTime() < oneWeek);
-    const lastWeekMeals = all.filter(m => {
+    const windowMeals = all.filter(m => now - new Date(m.date).getTime() < windowMs);
+    const prevMeals   = all.filter(m => {
       const age = now - new Date(m.date).getTime();
-      return age >= oneWeek && age < twoWeeks;
+      return age >= windowMs && age < prevMs;
     });
 
     const avg = arr => arr.length
       ? Math.round(arr.reduce((s, m) => s + m.score, 0) / arr.length)
       : 0;
 
-    const weeklyAvg   = avg(weeklyMeals);
-    const lastWeekAvg = avg(lastWeekMeals);
-    const trend       = lastWeekAvg > 0 ? weeklyAvg - lastWeekAvg : 0;
+    const windowAvg  = avg(windowMeals);
+    const prevAvg    = avg(prevMeals);
+    const trend      = prevAvg > 0 ? windowAvg - prevAvg : 0;
 
-    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    // Daily breakdown for the chart (last 7 days always shown in bar chart)
+    const days7 = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const last7Meals = all.filter(m => now - new Date(m.date).getTime() < 7 * 24 * 60 * 60 * 1000);
     const dailyScores = {};
-    weeklyMeals.forEach(m => {
+    last7Meals.forEach(m => {
       const d = new Date(m.date).getDay();
       if (!dailyScores[d]) dailyScores[d] = [];
       dailyScores[d].push(m.score);
     });
-    const dailyAvgs = days.map((day, i) => ({
+    const dailyAvgs = days7.map((day, i) => ({
       day,
       score: dailyScores[i] ? avg(dailyScores[i]) : null,
     }));
 
     return {
-      averageScore: weeklyAvg || avg(all),
+      averageScore: windowAvg || avg(all),
       trend,
       totalMeals:  all.length,
-      weeklyMeals,
-      weeklyAvg,
-      lastWeekAvg,
+      weeklyMeals: windowMeals,
+      weeklyAvg:   windowAvg,
+      lastWeekAvg: prevAvg,
       dailyAvgs,
+      windowDays:  days,
     };
   }
 
@@ -136,6 +148,7 @@
     saveMeal,
     getAllMeals,
     getRecentMeals,
+    getMealsSince,
     deleteMeal,
     clearAllMeals,
     getInsightStats,
