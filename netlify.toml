@@ -1,0 +1,9 @@
+# netlify.toml — Netlify deployment config for Debug the Diet
+
+[build]
+  publish = "."      # Serve from the root (pure HTML/JS/CSS, no build step)
+
+[[redirects]]
+  from = "/*"
+  to   = "/login.html"
+  status = 200       # SPA-style: unknown routes fall back to login

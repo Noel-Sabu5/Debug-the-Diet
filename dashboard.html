@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard | Debug the Diet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#6bff8f",
+          "on-surface": "#2b3437",
+          "surface-container-high": "#e2e9ec",
+          "on-primary-fixed": "#004a1d",
+          "surface-tint": "#006e2f",
+          "on-tertiary-fixed-variant": "#3b0003",
+          "primary-dim": "#006028",
+          "surface": "#f8f9fa",
+          "on-background": "#2b3437",
+          "secondary-container": "#d9e3f6",
+          "inverse-surface": "#0c0f10",
+          "on-secondary": "#f8f8ff",
+          "secondary-dim": "#4a5463",
+          "on-primary-container": "#005f28",
+          "on-error-container": "#742410",
+          "outline-variant": "#abb3b7",
+          "on-secondary-container": "#485262",
+          "on-tertiary-fixed": "#000000",
+          "primary-fixed": "#6bff8f",
+          "surface-container-low": "#f1f4f6",
+          "tertiary": "#ba1b24",
+          "outline": "#737c7f",
+          "surface-container-highest": "#dbe4e7",
+          "on-secondary-fixed-variant": "#525c6c",
+          "error": "#9e422c",
+          "surface-variant": "#dbe4e7",
+          "secondary-fixed": "#d9e3f6",
+          "on-secondary-fixed": "#36404f",
+          "surface-container-lowest": "#ffffff",
+          "on-primary": "#e4ffe2",
+          "inverse-on-surface": "#9b9d9e",
+          "surface-dim": "#d1dce0",
+          "inverse-primary": "#6bff8f",
+          "on-tertiary": "#fff7f6",
+          "error-container": "#fe8b70",
+          "tertiary-dim": "#a9081a",
+          "surface-container": "#eaeff1",
+          "tertiary-fixed-dim": "#ec4142",
+          "error-dim": "#5c1202",
+          "surface-bright": "#f8f9fa",
+          "on-tertiary-container": "#1f0001",
+          "background": "#f8f9fa",
+          "tertiary-fixed": "#fd4e4d",
+          "on-error": "#fff7f6",
+          "on-surface-variant": "#586064",
+          "primary-fixed-dim": "#5bf083",
+          "secondary-fixed-dim": "#cbd5e8",
+          "secondary": "#566070",
+          "on-primary-fixed-variant": "#006a2d",
+          "primary": "#006e2f"
+        },
+        fontFamily: {
+          "headline": ["Manrope"],
+          "body": ["Inter"],
+          "label": ["Inter"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .font-headline { font-family: 'Manrope', sans-serif; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .dark .backdrop-blur-md { background-color: rgba(10, 10, 10, 0.8); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .animate-spin { animation: spin 1s linear infinite; display: inline-block; }
+</style>
+
+<!-- Firebase compat SDKs (no bundler required) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
+</head>
+<body class="bg-surface dark:bg-neutral-950 text-on-surface dark:text-neutral-100 min-h-screen antialiased transition-colors duration-300">
+
+<!-- Auth guard: hide page until Firebase confirms session -->
+<script src="auth.js"></script>
+<script>document.body.style.opacity = '0'; document.body.style.transition = 'opacity 0.3s ease';</script>
+
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-slate-50/95 dark:bg-neutral-900/95 backdrop-blur-md shadow-sm dark:shadow-none font-manrope antialiased tracking-tight">
+  <div class="flex justify-between items-center h-16 px-6 md:px-12 max-w-7xl mx-auto w-full">
+    <div class="text-xl font-bold tracking-tighter text-slate-900 dark:text-neutral-50">Debug the Diet</div>
+    <nav class="hidden md:flex items-center space-x-8">
+      <a href="dashboard.html" class="text-green-700 dark:text-green-400 font-semibold border-b-2 border-green-700 dark:border-green-400 pb-1">Dashboard</a>
+      <a href="history.html" class="text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-200 transition-colors">History</a>
+      <a href="insights.html" class="text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-200 transition-colors">Insights</a>
+    </nav>
+    <div class="flex items-center space-x-2">
+      <span id="nav-username" class="hidden md:block text-xs font-medium text-on-surface-variant dark:text-neutral-500 mr-1"></span>
+      <button id="theme-toggle" class="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-lg transition-all active:scale-95 duration-200 ease-in-out" title="Toggle theme">
+        <span class="material-symbols-outlined text-slate-600 dark:text-neutral-300">light_mode</span>
+      </button>
+      <button class="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-lg transition-all active:scale-95 duration-200 ease-in-out">
+        <span class="material-symbols-outlined text-slate-600 dark:text-neutral-300">account_circle</span>
+      </button>
+      <button id="logout-btn" title="Sign out"
+              class="p-2 hover:bg-red-50 dark:hover:bg-tertiary-fixed/10 rounded-lg transition-all active:scale-95 duration-200 ease-in-out">
+        <span class="material-symbols-outlined text-slate-500 dark:text-neutral-500 hover:text-error dark:hover:text-tertiary-fixed">logout</span>
+      </button>
+    </div>
+  </div>
+  <div class="bg-slate-200/50 dark:bg-neutral-800/50 h-[1px] w-full absolute bottom-0"></div>
+</header>
+
+<main class="pt-24 pb-12 px-6 max-w-7xl mx-auto">
+  <!-- Header Section -->
+  <header class="mb-12">
+    <span class="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant dark:text-neutral-400 uppercase mb-2 block font-label">CLINICAL PRECISION</span>
+    <h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tighter text-on-surface dark:text-neutral-50">Nutrition Analysis</h1>
+    <p class="text-on-surface-variant dark:text-neutral-400 mt-2 max-w-2xl font-body">Input your meal details for a precise biochemical breakdown and personalized corrective insights.</p>
+  </header>
+
+  <!-- Food Input Section -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+    <div class="lg:col-span-8 bg-surface-container-low dark:bg-neutral-900 p-8 rounded-xl border border-outline-variant/10 dark:border-neutral-800 shadow-sm">
+      <div class="flex flex-col gap-6">
+        <div>
+          <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase mb-3 font-label">MEAL COMPOSITION <span class="normal-case text-outline dark:text-neutral-600 font-normal tracking-normal">— include weight per item for accurate macros</span></label>
+          <div class="relative group">
+            <textarea
+              id="meal-input"
+              class="w-full bg-surface-container-lowest dark:bg-neutral-950 border border-outline-variant/20 dark:border-neutral-800 rounded-lg p-5 text-on-surface dark:text-neutral-100 placeholder:text-outline dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary-fixed/20 min-h-[120px] transition-all outline-none"
+              placeholder="e.g., chicken 150g, brown rice 200g, broccoli 100g, egg 50g"></textarea>
+            <div class="absolute bottom-4 right-4 flex items-center gap-2">
+              <span class="text-[10px] text-outline dark:text-neutral-600 font-medium">QUICK ADD (100g):</span>
+              <div class="flex gap-1">
+                <button data-quick-add="rice" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">rice</button>
+                <button data-quick-add="chicken" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">chicken</button>
+                <button data-quick-add="quinoa" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">quinoa</button>
+                <button data-quick-add="eggs" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">eggs</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button
+            id="analyze-btn"
+            class="bg-primary dark:bg-primary-fixed text-on-primary dark:text-on-primary-fixed px-8 py-4 rounded-lg font-bold tracking-tight shadow-lg shadow-primary/20 dark:shadow-primary-fixed/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">analytics</span>
+            Analyze Meal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Macro Snapshot -->
+    <div class="lg:col-span-4 bg-surface-container-low dark:bg-neutral-900 rounded-xl p-8 flex flex-col justify-between border border-outline-variant/10 dark:border-neutral-800">
+      <div>
+        <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase mb-3 font-label">QUICK MACRO SNAPSHOT</label>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-secondary-dim dark:text-neutral-400">Target Met</span>
+            <span id="macro-target-pct" class="text-sm font-bold text-primary dark:text-primary-fixed">—%</span>
+          </div>
+          <div class="w-full bg-surface-container-highest dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+            <div id="macro-target-bar" class="bg-primary dark:bg-primary-fixed h-full transition-all duration-700" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-8 border-t border-outline-variant/10 dark:border-neutral-800">
+        <p class="text-xs text-on-surface-variant dark:text-neutral-400 leading-relaxed italic">
+          "Precision nutrition isn't about restriction; it's about debugging the variables of your metabolic engine."
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section id="results-section" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Health Score Card -->
+    <div class="bg-surface-container-low dark:bg-neutral-900 p-8 rounded-xl shadow-sm border border-outline-variant/10 dark:border-neutral-800 hover:border-primary/50 dark:hover:border-primary-fixed/50 transition-all group">
+      <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase mb-6 font-label">BIOMETRIC SCORE</label>
+      <div class="flex items-baseline gap-2 mb-4">
+        <span id="score-value" class="text-7xl font-headline font-extralight tracking-tighter text-on-surface dark:text-neutral-50">—</span>
+        <span class="text-xl font-headline font-semibold text-outline dark:text-neutral-600">/100</span>
+      </div>
+      <div id="score-badge" class="inline-flex items-center px-2 py-1 bg-primary/10 dark:bg-primary-fixed/10 text-primary dark:text-primary-fixed rounded text-[10px] font-bold uppercase tracking-wider mb-4 border border-primary/20 dark:border-primary-fixed/20">AWAITING INPUT</div>
+      <p id="score-description" class="text-sm text-on-surface-variant dark:text-neutral-400 leading-relaxed">
+        Analyze a meal above to receive a precision biometric score and clinical breakdown.
+      </p>
+    </div>
+
+    <!-- Issues & Insights -->
+    <div class="bg-surface-container-low dark:bg-neutral-900 p-8 rounded-xl shadow-sm border border-outline-variant/10 dark:border-neutral-800 lg:col-span-2">
+      <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase mb-6 font-label">CLINICAL OBSERVATIONS</label>
+      <div id="insights-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-5 bg-primary/5 dark:bg-primary-fixed/5 rounded-lg border-l-4 border-primary dark:border-primary-fixed sm:col-span-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed">info</span>
+            <span class="text-sm font-bold text-primary dark:text-primary-fixed uppercase tracking-tight">Ready to Analyze</span>
+          </div>
+          <p class="text-xs text-on-surface-variant dark:text-neutral-400">Enter your meal in the composition field above and click "Analyze Meal" to receive clinical observations.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nutrition Breakdown -->
+    <div class="bg-surface-container-low dark:bg-neutral-900 p-8 rounded-xl shadow-sm border border-outline-variant/10 dark:border-neutral-800 space-y-8">
+      <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase font-label">MACRONUTRIENT RATIOS</label>
+      <div class="space-y-6">
+        <!-- Protein -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-end">
+            <span class="text-xs font-bold text-on-surface dark:text-neutral-100 uppercase tracking-widest">Protein</span>
+            <span id="protein-value" class="text-xs font-medium text-on-surface-variant dark:text-neutral-400">—g | —%</span>
+          </div>
+          <div class="w-full bg-surface-container-highest dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+            <div id="protein-bar" class="bg-primary dark:bg-primary-fixed h-full rounded-full shadow-[0_0_12px_rgba(107,255,143,0.2)] transition-all duration-700" style="width: 0%"></div>
+          </div>
+        </div>
+        <!-- Carbs -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-end">
+            <span class="text-xs font-bold text-on-surface dark:text-neutral-100 uppercase tracking-widest">Carbohydrates</span>
+            <span id="carbs-value" class="text-xs font-medium text-on-surface-variant dark:text-neutral-400">—g | —%</span>
+          </div>
+          <div class="w-full bg-surface-container-highest dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+            <div id="carbs-bar" class="bg-secondary-dim dark:bg-neutral-600 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+          </div>
+        </div>
+        <!-- Fats -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-end">
+            <span class="text-xs font-bold text-on-surface dark:text-neutral-100 uppercase tracking-widest">Lipids</span>
+            <span id="fat-value" class="text-xs font-medium text-on-surface-variant dark:text-neutral-400">—g | —%</span>
+          </div>
+          <div class="w-full bg-surface-container-highest dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+            <div id="fat-bar" class="bg-outline dark:bg-neutral-500/30 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Plate Visualization -->
+    <div class="bg-surface-container-low dark:bg-neutral-900 p-8 rounded-xl shadow-sm border border-outline-variant/10 dark:border-neutral-800 flex flex-col items-center justify-center relative overflow-hidden">
+      <label class="absolute top-8 left-8 text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase font-label">PLATE BALANCE</label>
+      <div class="relative w-48 h-48 mt-4">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" fill="none" r="45" stroke="#1e293b" stroke-width="8" class="dark:stroke-neutral-800"></circle>
+          <!-- Protein -->
+          <circle id="plate-protein" cx="50" cy="50" fill="none" r="45" stroke="#6bff8f" stroke-dasharray="0 282.7" stroke-dashoffset="0" stroke-width="8" style="transition: stroke-dasharray 0.7s ease, stroke-dashoffset 0.7s ease;"></circle>
+          <!-- Carbs -->
+          <circle id="plate-carbs" cx="50" cy="50" fill="none" r="45" stroke="#566070" stroke-dasharray="0 282.7" stroke-dashoffset="0" stroke-width="8" class="dark:stroke-neutral-600" style="transition: stroke-dasharray 0.7s ease, stroke-dashoffset 0.7s ease;"></circle>
+          <!-- Fats -->
+          <circle id="plate-fat" cx="50" cy="50" fill="none" r="45" stroke="#475569" stroke-dasharray="0 282.7" stroke-dashoffset="0" stroke-width="8" class="dark:stroke-neutral-700" style="transition: stroke-dasharray 0.7s ease, stroke-dashoffset 0.7s ease;"></circle>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="material-symbols-outlined text-outline-variant dark:text-neutral-700 text-4xl">restaurant</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mt-8 w-full">
+        <div class="text-center">
+          <div class="w-2 h-2 rounded-full bg-primary dark:bg-primary-fixed mx-auto mb-1"></div>
+          <span class="text-[8px] font-bold text-on-surface-variant dark:text-neutral-500 uppercase">Prot</span>
+        </div>
+        <div class="text-center">
+          <div class="w-2 h-2 rounded-full bg-secondary-dim dark:bg-neutral-600 mx-auto mb-1"></div>
+          <span class="text-[8px] font-bold text-on-surface-variant dark:text-neutral-500 uppercase">Carb</span>
+        </div>
+        <div class="text-center">
+          <div class="w-2 h-2 rounded-full bg-outline-variant dark:bg-neutral-700 mx-auto mb-1"></div>
+          <span class="text-[8px] font-bold text-on-surface-variant dark:text-neutral-500 uppercase">Lipid</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Improvement Suggestions -->
+    <div class="bg-surface-container-low dark:bg-neutral-900 p-8 rounded-xl shadow-sm border-t-4 border-primary dark:border-primary-fixed border-x border-b border-outline-variant/10 dark:border-neutral-800">
+      <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase mb-6 font-label">OPTIMIZATION STEPS</label>
+      <ul id="suggestions-list" class="space-y-4">
+        <li class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-sm mt-0.5">info</span>
+          <p class="text-xs text-on-surface dark:text-neutral-300 leading-relaxed">Analyze a meal to receive personalized optimization steps and precision dietary recommendations.</p>
+        </li>
+      </ul>
+      <button id="export-btn" class="w-full mt-8 py-3 text-xs font-bold text-primary dark:text-primary-fixed border border-primary/30 dark:border-primary-fixed/30 rounded-lg hover:bg-primary/10 dark:hover:bg-primary-fixed/10 transition-colors uppercase tracking-widest">
+        Export Analysis
+      </button>
+    </div>
+  </section>
+
+  <!-- Aesthetic Content Divider -->
+  <div class="my-16 flex items-center gap-4">
+    <div class="h-px bg-outline-variant/10 dark:bg-neutral-800 grow"></div>
+    <span class="text-[10px] font-bold text-outline-variant dark:text-neutral-600 uppercase tracking-[0.3em]">Historical Reference</span>
+    <div class="h-px bg-outline-variant/10 dark:bg-neutral-800 grow"></div>
+  </div>
+
+  <!-- Recent Logs -->
+  <div id="recent-logs" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Dynamic tiles inserted here by JS -->
+    <div data-view-all class="bg-surface-container-low dark:bg-neutral-900/50 p-6 rounded-lg flex items-center justify-center border-2 border-dashed border-outline-variant/10 dark:border-neutral-800 hover:border-primary/50 dark:hover:border-primary-fixed/50 cursor-pointer group transition-colors">
+      <span class="text-[10px] font-bold text-outline dark:text-neutral-600 uppercase tracking-widest group-hover:text-primary dark:group-hover:text-primary-fixed transition-colors">View All Logs</span>
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="w-full border-t border-slate-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900">
+  <div class="flex flex-col md:flex-row justify-between items-center py-8 px-6 max-w-7xl mx-auto w-full">
+    <div class="font-bold text-slate-900 dark:text-neutral-50 mb-4 md:mb-0">Debug the Diet</div>
+    <div class="text-[12px] font-manrope uppercase tracking-widest text-slate-400 dark:text-neutral-500 mb-4 md:mb-0">© 2024 Debug the Diet. Precision Nutrition.</div>
+    <div class="flex gap-6">
+      <a href="#" class="text-[12px] font-manrope uppercase tracking-widest text-slate-400 dark:text-neutral-500 hover:text-green-600 transition-colors">Privacy Policy</a>
+      <a href="#" class="text-[12px] font-manrope uppercase tracking-widest text-slate-400 dark:text-neutral-500 hover:text-green-600 transition-colors">Terms of Service</a>
+      <a href="#" class="text-[12px] font-manrope uppercase tracking-widest text-slate-400 dark:text-neutral-500 hover:text-green-600 transition-colors">Support</a>
+    </div>
+  </div>
+</footer>
+
+<!-- JS Modules -->
+<script src="analyzer.js"></script>
+<script src="scoring.js"></script>
+<script src="storage.js"></script>
+<script src="ui.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
