@@ -53,44 +53,59 @@ function parseMealInput(raw) {
 
 /* ─────────────────────────────────────────────
    2.  USDA API — look up a single food (per 100g)
+   Tries multiple strategies before giving up.
 ───────────────────────────────────────────── */
 async function lookupFood(foodName) {
   const key = foodName.trim().toLowerCase();
   if (_cache[key]) return _cache[key];
 
-  const url = `${USDA_SEARCH}?api_key=${USDA_API_KEY}` +
-    `&query=${encodeURIComponent(key)}` +
-    `&dataType=Foundation,SR%20Legacy` +
-    `&pageSize=1`;
+  /** Hit USDA with a query string and optional dataType filter */
+  async function tryQuery(query, dataType = null) {
+    let url = `${USDA_SEARCH}?api_key=${USDA_API_KEY}` +
+      `&query=${encodeURIComponent(query)}&pageSize=3`;
+    if (dataType) url += `&dataType=${encodeURIComponent(dataType)}`;
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`USDA API ${res.status}`);
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.foods?.[0] ?? null;
+  }
 
-  const data = await res.json();
-  const food = data.foods?.[0];
-  if (!food) return null;
+  /** Parse nutrients from a USDA food object */
+  function extractNutrients(food) {
+    if (!food) return null;
+    const get = (id) => {
+      const n = food.foodNutrients?.find(fn => fn.nutrientId === id);
+      return n ? Math.max(0, n.value || 0) : 0;
+    };
+    const sodiumMg = get(NUTRIENT.sodium);
+    return {
+      description: food.description || foodName,
+      protein:     get(NUTRIENT.protein),
+      carbs:       get(NUTRIENT.carbs),
+      fat:         get(NUTRIENT.fat),
+      calories:    get(NUTRIENT.calories),
+      fiber:       get(NUTRIENT.fiber),
+      sugar:       get(NUTRIENT.sugar),
+      sodium:      sodiumMg,
+      sodiumHigh:  sodiumMg > 600,
+    };
+  }
 
-  // Helper: get value by nutrientId
-  const getNutrient = (id) => {
-    const n = food.foodNutrients?.find(fn => fn.nutrientId === id);
-    return n ? Math.max(0, n.value || 0) : 0;
-  };
+  // Strategy 1: strict databases (most nutritionally accurate)
+  let food = await tryQuery(key, 'Foundation,SR Legacy');
 
-  const sodiumMg = getNutrient(NUTRIENT.sodium);
+  // Strategy 2: all USDA databases (Survey, Branded, etc.)
+  if (!food) food = await tryQuery(key);
 
-  const result = {
-    description: food.description || foodName,
-    protein:     getNutrient(NUTRIENT.protein),
-    carbs:       getNutrient(NUTRIENT.carbs),
-    fat:         getNutrient(NUTRIENT.fat),
-    calories:    getNutrient(NUTRIENT.calories),
-    fiber:       getNutrient(NUTRIENT.fiber),
-    sugar:       getNutrient(NUTRIENT.sugar),
-    sodium:      sodiumMg,
-    sodiumHigh:  sodiumMg > 600, // >600mg/100g = high sodium
-  };
+  // Strategy 3: use only the first meaningful word (handles "white rice", "brown rice", etc.)
+  if (!food) {
+    const firstWord = key.split(' ').find(w => w.length > 2);
+    if (firstWord && firstWord !== key) food = await tryQuery(firstWord);
+  }
 
-  _cache[key] = result;
+  const result = extractNutrients(food);
+  if (result) _cache[key] = result;
   return result;
 }
 
