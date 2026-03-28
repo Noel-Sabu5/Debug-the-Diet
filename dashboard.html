@@ -135,33 +135,32 @@
   <!-- Food Input Section -->
   <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
     <div class="lg:col-span-8 bg-surface-container-low dark:bg-neutral-900 p-8 rounded-xl border border-outline-variant/10 dark:border-neutral-800 shadow-sm">
-      <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-4">
         <div>
           <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase mb-3 font-label">MEAL COMPOSITION <span class="normal-case text-outline dark:text-neutral-600 font-normal tracking-normal">— include weight per item for accurate macros</span></label>
-          <div class="relative group">
-            <textarea
-              id="meal-input"
-              class="w-full bg-surface-container-lowest dark:bg-neutral-950 border border-outline-variant/20 dark:border-neutral-800 rounded-lg p-5 text-on-surface dark:text-neutral-100 placeholder:text-outline dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary-fixed/20 min-h-[120px] transition-all outline-none"
-              placeholder="e.g., chicken 150g, brown rice 200g, broccoli 100g, egg 50g"></textarea>
-            <div class="absolute bottom-4 right-4 flex items-center gap-2">
-              <span class="text-[10px] text-outline dark:text-neutral-600 font-medium">QUICK ADD (100g):</span>
-              <div class="flex gap-1">
-                <button data-quick-add="rice" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">rice</button>
-                <button data-quick-add="chicken" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">chicken</button>
-                <button data-quick-add="quinoa" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">quinoa</button>
-                <button data-quick-add="eggs" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2 py-1 rounded hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">eggs</button>
-              </div>
-            </div>
-          </div>
+          <textarea
+            id="meal-input"
+            class="w-full bg-surface-container-lowest dark:bg-neutral-950 border border-outline-variant/20 dark:border-neutral-800 rounded-lg p-4 text-on-surface dark:text-neutral-100 placeholder:text-outline dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary-fixed/20 min-h-[110px] transition-all outline-none resize-none"
+            placeholder="e.g., chicken 150g, brown rice 200g, broccoli 100g"></textarea>
         </div>
-        <div class="flex justify-end">
-          <button
-            id="analyze-btn"
-            class="bg-primary dark:bg-primary-fixed text-on-primary dark:text-on-primary-fixed px-8 py-4 rounded-lg font-bold tracking-tight shadow-lg shadow-primary/20 dark:shadow-primary-fixed/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">analytics</span>
-            Analyze Meal
-          </button>
+
+        <!-- Quick Add row — below textarea, never overlapping -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-[10px] text-outline dark:text-neutral-600 font-medium uppercase tracking-wider">Quick add (100g):</span>
+          <button data-quick-add="rice"    class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2.5 py-1.5 rounded-md hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">Rice</button>
+          <button data-quick-add="chicken" class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2.5 py-1.5 rounded-md hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">Chicken</button>
+          <button data-quick-add="quinoa"  class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2.5 py-1.5 rounded-md hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">Quinoa</button>
+          <button data-quick-add="eggs"    class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2.5 py-1.5 rounded-md hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">Eggs</button>
+          <button data-quick-add="salmon"  class="text-[10px] bg-surface-container-high dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 px-2.5 py-1.5 rounded-md hover:bg-surface-container-highest dark:hover:bg-neutral-700 hover:text-on-background dark:hover:text-neutral-200 transition-colors">Salmon</button>
         </div>
+
+        <!-- Analyze button — full width on mobile -->
+        <button
+          id="analyze-btn"
+          class="w-full md:w-auto md:self-end bg-primary dark:bg-primary-fixed text-on-primary dark:text-on-primary-fixed px-8 py-4 rounded-lg font-bold tracking-tight shadow-lg shadow-primary/20 dark:shadow-primary-fixed/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-sm">analytics</span>
+          Analyze Meal
+        </button>
       </div>
     </div>
 
