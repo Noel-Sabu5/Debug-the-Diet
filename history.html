@@ -145,13 +145,11 @@
     <div class="bg-slate-200/50 dark:bg-neutral-800/50 h-[1px] w-full absolute bottom-0"></div>
   </header>
 
-  <main class="pt-24 pb-20 px-6 max-w-7xl mx-auto">
+  <main class="pt-20 pb-24 px-4 md:px-6 max-w-7xl mx-auto">
     <!-- Page Header -->
-    <div class="mb-10">
-      <h1 class="text-4xl font-extrabold tracking-tight text-on-surface dark:text-neutral-50 mb-2">Nutritional History
-      </h1>
-      <p class="text-on-surface-variant dark:text-neutral-400 max-w-2xl">A clinical audit of your dietary intake. Review
-        past entries to refine your precision nutrition plan.</p>
+    <div class="mb-8 md:mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-on-surface dark:text-neutral-50 mb-2">Nutritional History</h1>
+      <p class="text-sm md:text-base text-on-surface-variant dark:text-neutral-400 max-w-2xl">A clinical audit of your dietary intake. Review past entries to refine your precision nutrition plan.</p>
     </div>
 
     <!-- Filters & Search -->
@@ -238,6 +236,28 @@
     </div>
   </footer>
 
+  <!-- Mobile Bottom Navigation -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50
+              bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md
+              border-t border-slate-200 dark:border-neutral-800
+              flex items-center justify-around h-16 px-2">
+    <a href="dashboard.html"
+       class="flex flex-col items-center gap-0.5 flex-1 py-2 text-slate-400 dark:text-neutral-500">
+      <span class="material-symbols-outlined text-xl">dashboard</span>
+      <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
+    </a>
+    <a href="history.html"
+       class="flex flex-col items-center gap-0.5 flex-1 py-2 text-green-700 dark:text-green-400">
+      <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">history</span>
+      <span class="text-[10px] font-bold uppercase tracking-wider">History</span>
+    </a>
+    <a href="insights.html"
+       class="flex flex-col items-center gap-0.5 flex-1 py-2 text-slate-400 dark:text-neutral-500">
+      <span class="material-symbols-outlined text-xl">insights</span>
+      <span class="text-[10px] font-bold uppercase tracking-wider">Insights</span>
+    </a>
+  </nav>
+
   <!-- JS Modules -->
   <script src="analyzer.js"></script>
   <script src="scoring.js"></script>
@@ -245,5 +265,4 @@
   <script src="ui.js"></script>
   <script src="app.js"></script>
 </body>
-
 </html>

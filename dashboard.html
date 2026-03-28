@@ -124,12 +124,12 @@
   <div class="bg-slate-200/50 dark:bg-neutral-800/50 h-[1px] w-full absolute bottom-0"></div>
 </header>
 
-<main class="pt-24 pb-12 px-6 max-w-7xl mx-auto">
+<main class="pt-20 pb-24 px-4 md:px-6 max-w-7xl mx-auto">
   <!-- Header Section -->
-  <header class="mb-12">
+  <header class="mb-8 md:mb-12">
     <span class="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant dark:text-neutral-400 uppercase mb-2 block font-label">CLINICAL PRECISION</span>
-    <h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tighter text-on-surface dark:text-neutral-50">Nutrition Analysis</h1>
-    <p class="text-on-surface-variant dark:text-neutral-400 mt-2 max-w-2xl font-body">Input your meal details for a precise biochemical breakdown and personalized corrective insights.</p>
+    <h1 class="text-3xl md:text-5xl font-headline font-extrabold tracking-tighter text-on-surface dark:text-neutral-50">Nutrition Analysis</h1>
+    <p class="text-sm md:text-base text-on-surface-variant dark:text-neutral-400 mt-2 max-w-2xl font-body">Input your meal details for a precise biochemical breakdown and personalized corrective insights.</p>
   </header>
 
   <!-- Food Input Section -->
@@ -329,6 +329,28 @@
     </div>
   </div>
 </footer>
+
+<!-- Mobile Bottom Navigation (visible only on small screens) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50
+            bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md
+            border-t border-slate-200 dark:border-neutral-800
+            flex items-center justify-around h-16 px-2">
+  <a href="dashboard.html"
+     class="flex flex-col items-center gap-0.5 flex-1 py-2 text-green-700 dark:text-green-400">
+    <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">dashboard</span>
+    <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
+  </a>
+  <a href="history.html"
+     class="flex flex-col items-center gap-0.5 flex-1 py-2 text-slate-400 dark:text-neutral-500">
+    <span class="material-symbols-outlined text-xl">history</span>
+    <span class="text-[10px] font-bold uppercase tracking-wider">History</span>
+  </a>
+  <a href="insights.html"
+     class="flex flex-col items-center gap-0.5 flex-1 py-2 text-slate-400 dark:text-neutral-500">
+    <span class="material-symbols-outlined text-xl">insights</span>
+    <span class="text-[10px] font-bold uppercase tracking-wider">Insights</span>
+  </a>
+</nav>
 
 <!-- JS Modules -->
 <script src="analyzer.js"></script>
