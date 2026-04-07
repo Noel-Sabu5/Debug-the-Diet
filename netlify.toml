@@ -1,9 +1,34 @@
 # netlify.toml — Netlify deployment config for Debug the Diet
 
 [build]
-  publish = "."      # Serve from the root (pure HTML/JS/CSS, no build step)
+  command = "node generate-config.js"   # Generates config.js from GROQ_KEY + USDA_KEY env vars
+  publish = "."                          # Serve from root
 
+# Required env vars (Netlify → Site → Environment Variables):
+#   GROQ_KEY  = your Groq API key
+#   USDA_KEY  = your USDA FoodData Central API key
+
+# Allow static JS/CSS/image files to pass through BEFORE the SPA catch-all
+[[redirects]]
+  from   = "/*.js"
+  to     = "/:splat.js"
+  status = 200
+  force  = false
+
+[[redirects]]
+  from   = "/*.css"
+  to     = "/:splat.css"
+  status = 200
+  force  = false
+
+[[redirects]]
+  from   = "/*.png"
+  to     = "/:splat.png"
+  status = 200
+  force  = false
+
+# SPA fallback — only for routes that don't match real files
 [[redirects]]
   from = "/*"
   to   = "/login.html"
-  status = 200       # SPA-style: unknown routes fall back to login
+  status = 200
