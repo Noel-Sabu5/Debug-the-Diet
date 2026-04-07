@@ -87,10 +87,10 @@
                   border-color 0.3s ease, fill 0.3s ease !important;
     }
   </style>
-  <script>(function(){var h=document.documentElement,t;new MutationObserver(function(){h.classList.add('theme-changing');clearTimeout(t);t=setTimeout(function(){h.classList.remove('theme-changing');},420);}).observe(h,{attributes:true,attributeFilter:['class']});})();</script>
+  <script>(function(){var h=document.documentElement,t;new MutationObserver(function(ms){ms.forEach(function(m){var o=(m.oldValue||'').indexOf('dark')>=0,n=h.classList.contains('dark');if(o===n)return;h.classList.add('theme-changing');clearTimeout(t);t=setTimeout(function(){h.classList.remove('theme-changing');},420);});}).observe(h,{attributes:true,attributeFilter:['class'],attributeOldValue:true});})();</script>
 
   <!-- API key config (gitignored) -->
-  <script src="config.js"></script>
+  <script src="config.js" onerror="window.CONFIG=window.CONFIG||{}"></script>
 
   <!-- Firebase compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
