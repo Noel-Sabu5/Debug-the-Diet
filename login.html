@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Login | Debug the Diet</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#6bff8f",
+            "on-surface": "#2b3437",
+            "surface-container-high": "#e2e9ec",
+            "on-primary-fixed": "#004a1d",
+            "surface-tint": "#006e2f",
+            "on-tertiary-fixed-variant": "#3b0003",
+            "primary-dim": "#006028",
+            "surface": "#f8f9fa",
+            "on-background": "#2b3437",
+            "secondary-container": "#d9e3f6",
+            "inverse-surface": "#0c0f10",
+            "on-secondary": "#f8f8ff",
+            "secondary-dim": "#4a5463",
+            "on-primary-container": "#005f28",
+            "on-error-container": "#742410",
+            "outline-variant": "#abb3b7",
+            "on-secondary-container": "#485262",
+            "on-tertiary-fixed": "#000000",
+            "primary-fixed": "#6bff8f",
+            "surface-container-low": "#f1f4f6",
+            "tertiary": "#ba1b24",
+            "outline": "#737c7f",
+            "surface-container-highest": "#dbe4e7",
+            "on-secondary-fixed-variant": "#525c6c",
+            "error": "#9e422c",
+            "surface-variant": "#dbe4e7",
+            "secondary-fixed": "#d9e3f6",
+            "on-secondary-fixed": "#36404f",
+            "surface-container-lowest": "#ffffff",
+            "on-primary": "#e4ffe2",
+            "inverse-on-surface": "#9b9d9e",
+            "surface-dim": "#d1dce0",
+            "inverse-primary": "#6bff8f",
+            "on-tertiary": "#fff7f6",
+            "error-container": "#fe8b70",
+            "tertiary-dim": "#a9081a",
+            "surface-container": "#eaeff1",
+            "tertiary-fixed-dim": "#ec4142",
+            "error-dim": "#5c1202",
+            "surface-bright": "#f8f9fa",
+            "on-tertiary-container": "#1f0001",
+            "background": "#f8f9fa",
+            "tertiary-fixed": "#fd4e4d",
+            "on-error": "#fff7f6",
+            "on-surface-variant": "#586064",
+            "primary-fixed-dim": "#5bf083",
+            "secondary-fixed-dim": "#cbd5e8",
+            "secondary": "#566070",
+            "on-primary-fixed-variant": "#006a2d",
+            "primary": "#006e2f"
+          },
+          fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* Dark body background */
+    html.dark body {
+      background-color: #0c0f10;
+    }
+
+    html:not(.dark) body {
+      background-color: #f8f9fa;
+    }
+
+    /* Glass card (dark) */
+    .glass-card {
+      background: rgba(43, 52, 55, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(171, 179, 183, 0.12);
+    }
+
+    /* Solid card (light) */
+    .solid-card {
+      background: #ffffff;
+      box-shadow: 0 8px 32px rgba(43, 52, 55, 0.06);
+    }
+
+    /* Transition for theme switch */
+    body,
+    .login-card,
+    .login-field {
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .delay-1 {
+      animation-delay: 0.08s;
+    }
+
+    .delay-2 {
+      animation-delay: 0.16s;
+    }
+
+    .delay-3 {
+      animation-delay: 0.24s;
+    }
+
+    /* Spinner */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spin {
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    /* Error shake */
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20%,
+      60% {
+        transform: translateX(-6px);
+      }
+
+      40%,
+      80% {
+        transform: translateX(6px);
+      }
+    }
+
+    .shake {
+      animation: shake 0.4s ease;
+    }
+  </style>
+
+  <!-- Firebase compat SDKs (no bundler required) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script src="auth.js"></script>
+</head>
+
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- Auth guard: redirect to dashboard if already logged in -->
+  <script>
+    // Firebase auth state is async; use onAuthStateChanged not isLoggedIn()
+    if (window._auth) {
+      window._auth.onAuthStateChanged(function(user) {
+        if (user) window.location.href = 'dashboard.html';
+      });
+    }
+  </script>
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <header class="w-full flex items-center justify-between h-16 px-6 sticky top-0 z-50
+                 bg-background/80 dark:bg-[#0c0f10]/80 backdrop-blur-md
+                 border-b border-surface-container-high/40 dark:border-white/5">
+    <div class="flex items-center gap-3">
+      <div
+        class="h-8 w-8 rounded-lg bg-primary dark:bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+        <span class="material-symbols-outlined text-primary-fixed text-lg"
+          style="font-variation-settings:'FILL' 1;">shield_with_heart</span>
+      </div>
+      <span class="text-lg font-extrabold tracking-tight text-primary dark:text-primary-fixed font-headline">
+        Debug the Diet
+      </span>
+    </div>
+
+    <!-- Theme toggle -->
+    <button id="theme-toggle"
+      class="p-2 rounded-lg hover:bg-surface-container-high dark:hover:bg-white/10 transition-colors"
+      title="Toggle theme" aria-label="Toggle theme">
+      <span id="theme-icon"
+        class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant">light_mode</span>
+    </button>
+  </header>
+
+  <!-- ── MAIN ───────────────────────────────────────────────── -->
+  <main class="flex-grow flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md space-y-6">
+
+      <!-- Brand tagline (dark: shown, light: hidden via JS swap) -->
+      <div id="brand-tagline" class="text-center space-y-1 animate-in">
+        <p class="text-xs uppercase tracking-[0.18em] font-label text-outline dark:text-outline-variant">
+          Clinical Nutrition Intelligence
+        </p>
+      </div>
+
+      <!-- ── LOGIN CARD ──────────────────────────────────────── -->
+      <div id="login-card"
+        class="login-card glass-card dark:glass-card rounded-xl p-8 shadow-2xl overflow-hidden relative group animate-in delay-1">
+
+        <!-- Accent glow (dark mode only) -->
+        <div class="absolute -top-20 -right-20 h-44 w-44 bg-primary/10 rounded-full blur-3xl
+                    group-hover:bg-primary/20 transition-all duration-700 dark:block hidden pointer-events-none"></div>
+        <!-- Light-mode corner gradient -->
+        <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-primary-container/20 to-transparent
+                    blur-2xl dark:hidden pointer-events-none"></div>
+
+        <!-- Card header -->
+        <div class="mb-8">
+          <h1 class="text-2xl font-headline font-bold text-on-surface dark:text-surface-bright tracking-tight">
+            Welcome back
+          </h1>
+          <p class="text-on-surface-variant text-sm mt-1">
+            Access your metabolic dashboard.
+          </p>
+        </div>
+
+        <!-- Error banner -->
+        <div id="error-banner" class="hidden mb-6 flex items-center gap-3 px-4 py-3 rounded-lg
+                    bg-error/10 dark:bg-tertiary-fixed/10 border border-error/20 dark:border-tertiary-fixed/20">
+          <span class="material-symbols-outlined text-error dark:text-tertiary-fixed text-lg flex-shrink-0">error</span>
+          <p id="error-text" class="text-xs font-medium text-error dark:text-tertiary-fixed"></p>
+        </div>
+
+        <!-- FORM -->
+        <form id="login-form" novalidate class="space-y-5">
+          <!-- Email -->
+          <div class="space-y-1.5 animate-in delay-2">
+            <label class="block text-[10px] font-bold uppercase tracking-widest
+                          text-on-surface-variant dark:text-outline-variant px-1" for="email">
+              Email or Username
+            </label>
+            <div class="relative group/field">
+              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-lg
+                           text-outline-variant transition-colors group-focus-within/field:text-primary
+                           dark:group-focus-within/field:text-primary-fixed">alternate_email</span>
+              <input id="email" type="email" autocomplete="email" spellcheck="false" placeholder="name@precision.diet"
+                class="login-field w-full pl-11 pr-4 py-3 rounded-lg text-sm outline-none transition-all duration-200
+                            bg-surface-container-low dark:bg-white/5
+                            text-on-surface dark:text-surface-bright
+                            placeholder:text-outline-variant/60 dark:placeholder:text-outline/60
+                            border border-transparent focus:border-primary/30 dark:focus:border-primary-fixed/30
+                            focus:bg-surface-container-lowest dark:focus:bg-white/8
+                            focus:ring-2 focus:ring-primary/10 dark:focus:ring-primary-fixed/10" />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="space-y-1.5 animate-in delay-2">
+            <div class="flex justify-between items-center px-1">
+              <label class="block text-[10px] font-bold uppercase tracking-widest
+                            text-on-surface-variant dark:text-outline-variant" for="password">
+                Password
+              </label>
+              <a href="#" class="text-[10px] font-bold uppercase tracking-wider
+                                 text-primary dark:text-primary-fixed
+                                 hover:opacity-75 transition-opacity">
+                Forgot Password?
+              </a>
+            </div>
+            <div class="relative group/field">
+              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-lg
+                           text-outline-variant transition-colors group-focus-within/field:text-primary
+                           dark:group-focus-within/field:text-primary-fixed">lock</span>
+              <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" class="login-field w-full pl-11 pr-12 py-3 rounded-lg text-sm outline-none transition-all duration-200
+                            bg-surface-container-low dark:bg-white/5
+                            text-on-surface dark:text-surface-bright
+                            placeholder:text-outline-variant/60 dark:placeholder:text-outline/60
+                            border border-transparent focus:border-primary/30 dark:focus:border-primary-fixed/30
+                            focus:bg-surface-container-lowest dark:focus:bg-white/8
+                            focus:ring-2 focus:ring-primary/10 dark:focus:ring-primary-fixed/10" />
+              <!-- Show/hide toggle -->
+              <button type="button" id="pw-toggle" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline-variant
+                             hover:text-on-surface dark:hover:text-surface-bright transition-colors"
+                aria-label="Toggle password visibility">
+                <span id="pw-icon" class="material-symbols-outlined text-lg">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button id="submit-btn" type="submit" class="animate-in delay-3 w-full py-3.5 rounded-lg font-headline font-bold text-sm
+                         bg-primary dark:bg-primary text-on-primary dark:text-primary-fixed
+                         hover:brightness-110 active:scale-[0.98] transition-all duration-200
+                         shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+            <span id="btn-text">Sign In</span>
+            <span id="btn-icon" class="material-symbols-outlined text-lg">arrow_forward</span>
+          </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative flex items-center my-6">
+          <div class="flex-grow border-t border-surface-container-high dark:border-white/10"></div>
+          <span class="flex-shrink mx-4 text-[10px] font-bold uppercase tracking-widest
+                       text-outline-variant font-label">OR</span>
+          <div class="flex-grow border-t border-surface-container-high dark:border-white/10"></div>
+        </div>
+
+        <!-- Google button -->
+        <button type="button" id="google-btn" class="w-full bg-surface-container-lowest dark:bg-white/5
+                       border border-outline-variant/20 dark:border-white/10
+                       py-3 rounded-lg text-sm font-medium
+                       text-on-surface-variant dark:text-outline-variant
+                       hover:bg-surface-container-low dark:hover:bg-white/10
+                       transition-colors flex items-center justify-center gap-3">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4" />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853" />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              fill="#FBBC05" />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335" />
+          </svg>
+          Continue with Google
+        </button>
+
+        <!-- Register link -->
+        <p class="text-center text-sm text-on-surface-variant mt-6">
+          Don't have an account?
+          <a href="#" class="text-primary dark:text-primary-fixed font-semibold
+                             hover:underline underline-offset-4 decoration-primary-container ml-1
+                             transition-all">
+            Create an account
+          </a>
+        </p>
+      </div>
+
+      <!-- ── TRUST SIGNALS ────────────────────────────────── -->
+      <div class="animate-in delay-3 flex items-center justify-center gap-6
+                  opacity-50 dark:opacity-40">
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-on-surface-variant">verified_user</span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">AES-256</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-on-surface-variant">gpp_good</span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">HIPAA Compliant</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm text-on-surface-variant">lock</span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Private</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────── -->
+  <footer class="w-full py-8 border-t border-surface-container-high/40 dark:border-white/5">
+    <div class="flex flex-col items-center gap-3 px-6">
+      <div class="flex gap-6">
+        <a href="#"
+          class="text-[11px] uppercase tracking-widest text-secondary dark:text-outline-variant
+                           hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-70 hover:opacity-100">
+          Privacy Policy</a>
+        <a href="#"
+          class="text-[11px] uppercase tracking-widest text-secondary dark:text-outline-variant
+                           hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-70 hover:opacity-100">
+          Terms of Service</a>
+        <a href="#"
+          class="text-[11px] uppercase tracking-widest text-secondary dark:text-outline-variant
+                           hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-70 hover:opacity-100">
+          Security Overview</a>
+      </div>
+      <p class="text-[11px] uppercase tracking-widest text-secondary-dim dark:text-outline-variant opacity-60">
+        © 2024 Debug the Diet. Clinical Precision.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Background decorations -->
+  <div class="fixed top-0 right-0 -z-10 w-1/3 h-1/2 bg-gradient-to-bl
+              from-primary-container/20 to-transparent blur-3xl opacity-40 dark:opacity-10 pointer-events-none"></div>
+  <div class="fixed bottom-0 left-0 -z-10 w-1/4 h-1/3 bg-gradient-to-tr
+              from-secondary-container/30 to-transparent blur-3xl opacity-30 dark:opacity-5 pointer-events-none"></div>
+  <div class="fixed bottom-0 left-0 -z-10 w-full h-1/2 bg-gradient-to-t
+              from-primary/5 to-transparent dark:from-primary/8 pointer-events-none"></div>
+
+  <!-- ── SCRIPT ─────────────────────────────────────────────── -->
+  <script>
+    (function () {
+      'use strict';
+
+      // ── Theme ──────────────────────────────────────────────────
+      const html = document.documentElement;
+      const themeBtn = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      const loginCard = document.getElementById('login-card');
+
+      function applyTheme(dark) {
+        if (dark) {
+          html.classList.add('dark');
+          themeIcon.textContent = 'light_mode';
+          loginCard.classList.add('glass-card');
+          loginCard.classList.remove('solid-card');
+        } else {
+          html.classList.remove('dark');
+          themeIcon.textContent = 'dark_mode';
+          loginCard.classList.remove('glass-card');
+          loginCard.classList.add('solid-card');
+        }
+        localStorage.setItem('dtd_theme', dark ? 'dark' : 'light');
+      }
+
+      // Restore saved theme (default: dark)
+      const saved = localStorage.getItem('dtd_theme');
+      applyTheme(saved === 'light' ? false : true);
+
+      themeBtn.addEventListener('click', () => {
+        applyTheme(!html.classList.contains('dark'));
+      });
+
+      // ── Password visibility ────────────────────────────────────
+      const pwInput = document.getElementById('password');
+      const pwToggle = document.getElementById('pw-toggle');
+      const pwIcon = document.getElementById('pw-icon');
+
+      pwToggle.addEventListener('click', () => {
+        const show = pwInput.type === 'password';
+        pwInput.type = show ? 'text' : 'password';
+        pwIcon.textContent = show ? 'visibility_off' : 'visibility';
+      });
+
+      // ── Error display ──────────────────────────────────────────
+      const errorBanner = document.getElementById('error-banner');
+      const errorText = document.getElementById('error-text');
+
+      function showError(msg) {
+        errorText.textContent = msg;
+        errorBanner.classList.remove('hidden');
+        errorBanner.classList.add('flex');
+        document.getElementById('login-card').classList.add('shake');
+        setTimeout(() => document.getElementById('login-card').classList.remove('shake'), 450);
+      }
+      function hideError() {
+        errorBanner.classList.add('hidden');
+        errorBanner.classList.remove('flex');
+      }
+
+      // ── Loading state ──────────────────────────────────────────
+      const submitBtn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('btn-text');
+      const btnIcon = document.getElementById('btn-icon');
+
+      function setLoading(on) {
+        submitBtn.disabled = on;
+        if (on) {
+          btnText.textContent = 'Signing in…';
+          btnIcon.classList.add('spin');
+          btnIcon.textContent = 'progress_activity';
+        } else {
+          btnText.textContent = 'Sign In';
+          btnIcon.classList.remove('spin');
+          btnIcon.textContent = 'arrow_forward';
+        }
+      }
+
+      // ── Form submit ────────────────────────────────────────────
+      const form = document.getElementById('login-form');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
+
+        const email    = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        setLoading(true);
+
+        const result = await window.Auth.login(email, password);
+
+        if (!result.ok) {
+          setLoading(false);
+          showError(result.error);
+        }
+        // On success → onAuthStateChanged (set in auth guard) redirects to dashboard
+      });
+
+      // ── Google Sign-In ───────────────────────────────────────
+      document.getElementById('google-btn').addEventListener('click', async () => {
+        hideError();
+        setLoading(true);
+        const result = await window.Auth.loginWithGoogle();
+        if (!result.ok) {
+          setLoading(false);
+          showError(result.error);
+        }
+      });
+
+      // ── Clear error on input ─────────────────────────────────
+      ['email', 'password'].forEach(id => {
+        document.getElementById(id).addEventListener('input', hideError);
+      });
+
+    })();
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Sleep Tracking - Debug the Diet</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-dim":                "#d1dce0",
+            "inverse-primary":            "#6bff8f",
+            "tertiary-fixed":             "#fd4e4d",
+            "on-background":              "#2b3437",
+            "surface-container-highest":  "#dbe4e7",
+            "primary-fixed":              "#6bff8f",
+            "primary-fixed-dim":          "#5bf083",
+            "secondary-fixed":            "#d9e3f6",
+            "error-container":            "#fe8b70",
+            "surface-tint":               "#006e2f",
+            "surface":                    "#f8f9fa",
+            "primary":                    "#006e2f",
+            "on-secondary-fixed":         "#36404f",
+            "on-secondary-container":     "#485262",
+            "tertiary-fixed-dim":         "#ec4142",
+            "on-surface-variant":         "#586064",
+            "on-primary-fixed":           "#004a1d",
+            "surface-container":          "#eaeff1",
+            "tertiary-container":         "#fd4e4d",
+            "surface-container-high":     "#e2e9ec",
+            "on-primary-container":       "#005f28",
+            "background":                 "#f8f9fa",
+            "inverse-on-surface":         "#9b9d9e",
+            "surface-bright":             "#f8f9fa",
+            "error":                      "#9e422c",
+            "on-error":                   "#fff7f6",
+            "secondary-container":        "#d9e3f6",
+            "on-tertiary":                "#fff7f6",
+            "on-tertiary-container":      "#1f0001",
+            "outline":                    "#737c7f",
+            "error-dim":                  "#5c1202",
+            "secondary-dim":              "#4a5463",
+            "secondary-fixed-dim":        "#cbd5e8",
+            "tertiary-dim":               "#a9081a",
+            "secondary":                  "#566070",
+            "on-surface":                 "#2b3437",
+            "surface-container-low":      "#f1f4f6",
+            "outline-variant":            "#abb3b7",
+            "on-primary":                 "#e4ffe2",
+            "primary-dim":                "#006028",
+            "on-error-container":         "#742410",
+            "inverse-surface":            "#0c0f10",
+            "tertiary":                   "#ba1b24",
+            "surface-variant":            "#dbe4e7",
+            "on-secondary":               "#f8f8ff",
+            "surface-container-lowest":   "#ffffff",
+            "on-tertiary-fixed-variant":  "#3b0003",
+            "primary-container":          "#6bff8f",
+            "on-tertiary-fixed":          "#000000",
+            "on-secondary-fixed-variant": "#525c6c",
+            "on-primary-fixed-variant":   "#006a2d"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body":     ["Inter"],
+            "label":    ["Inter"]
+          },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-headline { font-family: 'Manrope', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .clinical-shadow { box-shadow: 0 8px 32px -4px rgba(43,52,55,0.06); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .animate-pulse { animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite; }
+    /* Smooth dark/light mode transitions */
+    html.theme-changing, html.theme-changing * {
+      transition: background-color 0.35s ease, color 0.25s ease,
+                  border-color 0.3s ease, fill 0.3s ease !important;
+    }
+    /* Protocol modal */
+    #protocol-modal { transition: opacity 0.25s ease; }
+    #protocol-modal.hidden { pointer-events: none; }
+  </style>
+  <script>(function(){var h=document.documentElement,t;new MutationObserver(function(){h.classList.add('theme-changing');clearTimeout(t);t=setTimeout(function(){h.classList.remove('theme-changing');},420);}).observe(h,{attributes:true,attributeFilter:['class']});})();</script>
+
+  <!-- API key config (gitignored) -->
+  <script src="config.js"></script>
+
+  <!-- Firebase compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+</head>
+
+<body class="bg-surface dark:bg-neutral-950 text-on-surface dark:text-neutral-100 min-h-screen antialiased transition-colors duration-300 font-body selection:bg-primary-container selection:text-on-primary-container">
+
+<!-- Auth guard: hide page until Firebase confirms session -->
+<script src="auth.js"></script>
+<script>document.body.style.opacity = '0'; document.body.style.transition = 'opacity 0.3s ease';</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     TOP NAV BAR
+═══════════════════════════════════════════════════════ -->
+<header class="fixed top-0 w-full z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md shadow-sm dark:shadow-none font-headline antialiased tracking-tight">
+  <div class="flex justify-between items-center h-16 px-6 md:px-12 max-w-7xl mx-auto w-full">
+    <div class="text-xl font-bold tracking-tighter text-on-surface dark:text-neutral-50">Debug the Diet</div>
+    <nav class="hidden md:flex items-center space-x-8">
+      <a href="dashboard.html"  class="text-slate-500 dark:text-neutral-400 hover:text-primary dark:hover:text-primary-fixed transition-colors font-medium">Dashboard</a>
+      <a href="history.html"   class="text-slate-500 dark:text-neutral-400 hover:text-primary dark:hover:text-primary-fixed transition-colors font-medium">History</a>
+      <a href="insights.html"  class="text-slate-500 dark:text-neutral-400 hover:text-primary dark:hover:text-primary-fixed transition-colors font-medium">Insights</a>
+      <a href="sleep trackking white .html" class="text-primary dark:text-primary-fixed font-extrabold relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary dark:after:bg-primary-fixed after:rounded-full">Sleep</a>
+    </nav>
+    <div class="flex items-center space-x-2">
+      <span id="nav-username" class="hidden md:block text-xs font-medium text-on-surface-variant dark:text-neutral-500 mr-1"></span>
+      <button id="theme-toggle" title="Toggle theme"
+        class="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-lg transition-all active:scale-95 duration-200">
+        <span class="material-symbols-outlined text-slate-600 dark:text-neutral-300">light_mode</span>
+      </button>
+      <button class="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-lg transition-all active:scale-95">
+        <span class="material-symbols-outlined text-slate-600 dark:text-neutral-300">account_circle</span>
+      </button>
+      <button id="logout-btn" title="Sign out"
+        class="p-2 hover:bg-red-50 dark:hover:bg-tertiary-fixed/10 rounded-lg transition-all active:scale-95">
+        <span class="material-symbols-outlined text-slate-500 dark:text-neutral-500 hover:text-error dark:hover:text-tertiary-fixed">logout</span>
+      </button>
+    </div>
+  </div>
+  <div class="bg-slate-200/50 dark:bg-neutral-800/50 h-px w-full absolute bottom-0"></div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════════ -->
+<main class="pt-24 pb-20 px-4 md:px-6 max-w-7xl mx-auto">
+
+  <!-- Page Header -->
+  <header class="mb-10">
+    <span class="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant dark:text-neutral-400 uppercase mb-2 block">Clinical Recovery</span>
+    <h1 class="font-headline text-4xl font-extrabold tracking-tight text-on-surface dark:text-neutral-50 mb-2">Sleep Tracking</h1>
+    <p class="text-on-surface-variant dark:text-neutral-400 text-base max-w-2xl leading-relaxed">
+      Log your sleep and get instant clinical feedback on recovery quality backed by your personal data.
+    </p>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+    <!-- ─── LEFT COLUMN ─── -->
+    <div class="lg:col-span-7 space-y-6">
+
+      <!-- Tonight's Assessment Card -->
+      <section class="bg-white dark:bg-neutral-900 rounded-xl clinical-shadow p-8 border border-slate-200/60 dark:border-neutral-800">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="font-headline text-xl font-bold text-on-surface dark:text-neutral-50">Tonight's Assessment</h2>
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed bg-primary/10 dark:bg-primary-fixed/10 p-2 rounded-lg">bedtime</span>
+        </div>
+
+        <form id="sleep-form" class="space-y-6" novalidate>
+          <div class="space-y-3">
+            <label class="block font-label text-xs font-bold tracking-widest text-on-surface-variant dark:text-neutral-400 uppercase" for="duration">
+              Sleep Duration (Hours)
+            </label>
+            <div class="relative">
+              <input
+                id="duration"
+                class="w-full bg-surface-container-low dark:bg-neutral-800 border border-transparent dark:border-neutral-700 rounded-lg h-14 px-4 text-xl font-headline font-bold focus:ring-2 focus:ring-primary/30 dark:focus:ring-primary-fixed/30 transition-all outline-none text-on-surface dark:text-neutral-50 placeholder:text-outline dark:placeholder:text-neutral-600"
+                placeholder="7.5" step="0.5" min="0.5" max="24" type="number" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-neutral-500 font-label font-medium">hrs</span>
+            </div>
+            <p id="duration-error" class="text-xs text-error dark:text-tertiary-fixed hidden">Please enter a valid sleep duration between 0.5 and 24 hours.</p>
+          </div>
+
+          <button id="analyze-btn" type="submit"
+            class="w-full bg-primary dark:bg-primary-fixed text-on-primary dark:text-on-primary-fixed font-headline font-bold py-4 rounded-lg flex items-center justify-center space-x-2 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 dark:shadow-primary-fixed/20 hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
+            <span id="analyze-label">Analyze Sleep</span>
+            <span id="analyze-icon" class="material-symbols-outlined text-lg">analytics</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Recent Records -->
+      <section class="bg-white dark:bg-neutral-900 rounded-xl p-8 border border-slate-200/60 dark:border-neutral-800">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-headline text-sm font-bold tracking-wider text-on-surface-variant dark:text-neutral-400 uppercase">Recent Records</h3>
+          <span id="records-count" class="text-[10px] font-bold text-outline dark:text-neutral-600 uppercase tracking-widest"></span>
+        </div>
+        <div id="recentRecords" class="space-y-3">
+          <!-- Skeleton loader -->
+          <div class="animate-pulse space-y-3" id="records-skeleton">
+            <div class="h-16 bg-surface-container-low dark:bg-neutral-800 rounded-lg"></div>
+            <div class="h-16 bg-surface-container-low dark:bg-neutral-800 rounded-lg"></div>
+            <div class="h-16 bg-surface-container-low dark:bg-neutral-800 rounded-lg"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ─── RIGHT COLUMN ─── -->
+    <div class="lg:col-span-5 space-y-6">
+
+      <!-- Recovery Analysis Card -->
+      <section class="bg-white dark:bg-neutral-900 rounded-xl clinical-shadow border border-slate-200/60 dark:border-neutral-800 overflow-hidden">
+        <div class="bg-primary/5 dark:bg-primary-fixed/5 p-8 border-b border-primary/10 dark:border-primary-fixed/10">
+          <h3 class="font-headline text-xs font-bold tracking-widest text-primary dark:text-primary-fixed uppercase mb-6">Recovery Analysis</h3>
+          <div class="flex items-baseline space-x-2 mb-1">
+            <span id="sleepScore" class="text-6xl font-headline font-extrabold text-on-surface dark:text-neutral-50 tracking-tighter">—</span>
+            <span class="text-xl font-headline font-medium text-on-surface-variant dark:text-neutral-500">/100</span>
+          </div>
+          <p class="text-on-surface-variant dark:text-neutral-400 font-medium text-sm">Daily Sleep Score</p>
+        </div>
+
+        <div class="p-8 space-y-6">
+          <!-- Category badge -->
+          <div id="sleepCategory"
+            class="inline-flex items-center px-4 py-1.5 rounded-full border bg-surface-container-low dark:bg-neutral-800 text-on-surface-variant dark:text-neutral-400 border-outline-variant/30 dark:border-neutral-700">
+            <span class="material-symbols-outlined text-base mr-2">bedtime</span>
+            <span class="text-sm font-bold uppercase tracking-tight">Awaiting Input</span>
+          </div>
+
+          <!-- Insight message -->
+          <div class="space-y-4">
+            <p id="sleepMessage" class="text-on-surface dark:text-neutral-300 leading-relaxed text-sm">
+              Enter your sleep duration above and click Analyze Sleep to receive a clinical recovery assessment.
+            </p>
+
+            <!-- Progress bar -->
+            <div class="h-2 w-full bg-surface-container dark:bg-neutral-800 rounded-full overflow-hidden">
+              <div id="sleepProgress" class="h-full bg-primary dark:bg-primary-fixed rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+            </div>
+
+            <div class="flex justify-between text-xs font-bold text-on-surface-variant dark:text-neutral-500 uppercase tracking-widest">
+              <span>Recovery Gap</span>
+              <span id="recoveryGapLabel">—% Remaining</span>
+            </div>
+          </div>
+
+          <!-- Weekly average (only shown when data exists) -->
+          <div id="weekly-avg-block" class="hidden pt-4 border-t border-outline-variant/20 dark:border-neutral-800">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-on-surface-variant dark:text-neutral-500 uppercase tracking-widest">7-Day Avg Score</span>
+              <span id="weekly-avg-score" class="text-xl font-headline font-bold text-primary dark:text-primary-fixed">—</span>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-xs font-bold text-on-surface-variant dark:text-neutral-500 uppercase tracking-widest">7-Day Avg Sleep</span>
+              <span id="weekly-avg-hours" class="text-sm font-semibold text-on-surface dark:text-neutral-300">—</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Editorial "Science of Rest" — DO NOT MODIFY -->
+      <section class="relative rounded-xl overflow-hidden aspect-[4/3] flex flex-col justify-end p-8 text-white">
+        <img class="absolute inset-0 w-full h-full object-cover"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBanrqlja6Y8HbJ6z4wo-A5nUoiZKal82P3PCzRuhSGQ91dBj-ghTxVtPVpuY5tEZxxVQeyTmbGErQX8jtKoNRDme4QncjCmokNjFu_baIDXlQCZUPjKRXE22e0Zm6vVVnzYRhLt6cUGvpz7cc8QxyZMrT34AWPZMlJbfM8W4TqbTb_LWhewRsA2HWGOL3Spl3BAJ0vplqRYEJLWNAxTpiD0PpaehBjCBhUpMMAs8Y6GSgnWtZdV-Kv5rUnJzCbzitBEcEfs3QHpA"
+          alt="Dark bedroom representing deep sleep" />
+        <div class="absolute inset-0 bg-gradient-to-t from-on-background/90 via-on-background/40 to-transparent"></div>
+        <div class="relative z-10">
+          <h4 class="font-headline text-2xl font-bold mb-2">The Science of Rest</h4>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">Deep sleep acts as a biological "debug" mode, clearing metabolic waste from the brain and repairing tissue.</p>
+          <a id="read-protocol-btn" onclick="openProtocolModal(event)" href="#"
+             class="text-primary-fixed font-bold text-sm inline-flex items-center group cursor-pointer">
+            Read Protocol
+            <span class="material-symbols-outlined ml-1 text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════
+     MOBILE BOTTOM NAV
+═══════════════════════════════════════════════════════ -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-slate-200 dark:border-neutral-800 flex items-center justify-around h-16 px-2">
+  <a href="dashboard.html"  class="flex flex-col items-center gap-0.5 flex-1 py-2 text-slate-400 dark:text-neutral-500">
+    <span class="material-symbols-outlined text-xl">dashboard</span>
+    <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
+  </a>
+  <a href="history.html"   class="flex flex-col items-center gap-0.5 flex-1 py-2 text-slate-400 dark:text-neutral-500">
+    <span class="material-symbols-outlined text-xl">history</span>
+    <span class="text-[10px] font-bold uppercase tracking-wider">History</span>
+  </a>
+  <a href="insights.html"  class="flex flex-col items-center gap-0.5 flex-1 py-2 text-slate-400 dark:text-neutral-500">
+    <span class="material-symbols-outlined text-xl">insights</span>
+    <span class="text-[10px] font-bold uppercase tracking-wider">Insights</span>
+  </a>
+  <a href="sleep trackking white .html" class="flex flex-col items-center gap-0.5 flex-1 py-2 text-primary dark:text-primary-fixed">
+    <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">bedtime</span>
+    <span class="text-[10px] font-bold uppercase tracking-wider">Sleep</span>
+  </a>
+</nav>
+
+<!-- Footer -->
+<footer class="w-full border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+  <div class="max-w-7xl mx-auto py-8 px-6 flex flex-col md:flex-row justify-between items-center opacity-80">
+    <div class="font-headline font-bold text-on-surface dark:text-neutral-50 mb-4 md:mb-0">Debug the Diet</div>
+    <div class="text-[12px] uppercase tracking-widest text-slate-400 dark:text-neutral-500">© 2024 Debug the Diet. Clinical Precision Nutrition.</div>
+    <div class="flex flex-wrap justify-center gap-6 mt-4 md:mt-0">
+      <a class="text-sm text-slate-400 dark:text-neutral-500 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Clinical Guidelines</a>
+      <a class="text-sm text-slate-400 dark:text-neutral-500 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Privacy</a>
+      <a class="text-sm text-slate-400 dark:text-neutral-500 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Support</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLEEP MODULE — Enterprise-grade, Firestore-backed
+═══════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ──────────────────────────────────────────
+     FIRESTORE COLLECTION REFERENCE
+     Path: users/{uid}/sleep  (matches meals pattern)
+  ────────────────────────────────────────── */
+  function sleepRef() {
+    const uid = window._auth && window._auth.currentUser && window._auth.currentUser.uid;
+    if (!uid) throw new Error('[Sleep] User not authenticated');
+    return window._db.collection('users').doc(uid).collection('sleep');
+  }
+
+  /* ──────────────────────────────────────────
+     SLEEP SCORING ENGINE
+  ────────────────────────────────────────── */
+  function analyzeSleep(hours) {
+    var score, category, badgeClass, icon;
+
+    if (hours < 4) {
+      score    = Math.round(10 + (hours / 4) * 20);   // 10–30
+      category = 'Severe Deficit';
+      badgeClass = 'bg-red-100 dark:bg-red-900/30 text-error dark:text-red-400 border-error/30 dark:border-red-800';
+      icon     = 'warning';
+    } else if (hours < 6) {
+      score    = Math.round(30 + ((hours - 4) / 2) * 25);  // 30–55
+      category = 'Poor Recovery';
+      badgeClass = 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-800';
+      icon     = 'do_not_disturb_on';
+    } else if (hours < 7) {
+      score    = Math.round(55 + ((hours - 6) / 1) * 20);  // 55–75
+      category = 'Moderate Recovery';
+      badgeClass = 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-800';
+      icon     = 'schedule';
+    } else if (hours <= 9) {
+      score    = Math.round(82 + ((hours - 7) / 2) * 13);  // 82–95
+      category = 'Optimal Recovery';
+      badgeClass = 'bg-primary-container/40 dark:bg-primary-fixed/10 text-on-primary-container dark:text-primary-fixed border-primary/20 dark:border-primary-fixed/20';
+      icon     = 'verified';
+    } else if (hours <= 11) {
+      score    = Math.round(65 - ((hours - 9) / 2) * 15);  // 65–50
+      category = 'Excess Duration';
+      badgeClass = 'bg-secondary-container/40 dark:bg-neutral-800 text-on-secondary-container dark:text-neutral-300 border-secondary/20 dark:border-neutral-700';
+      icon     = 'info';
+    } else {
+      score    = Math.round(35);
+      category = 'Hypersomnia Risk';
+      badgeClass = 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-800';
+      icon     = 'warning';
+    }
+
+    var messages = {
+      'Severe Deficit':    'Critical sleep deprivation detected. Under 4 hours causes acute cognitive impairment, elevated cortisol, and immune suppression. Immediate recovery sleep is required.',
+      'Poor Recovery':     'Significant sleep deficit identified. Under 6 hours disrupts REM cycles and impairs metabolic regulation. Target at least 7 hours consistently.',
+      'Moderate Recovery': 'Partial recovery achieved. You are approaching the clinically recommended range. An additional 30–60 minutes would substantially improve neural restoration and hormonal balance.',
+      'Optimal Recovery':  'Excellent circadian alignment. The ' + hours + '-hour window provided sufficient time for complete REM cycles, deep-wave consolidation, and hormonal recovery. Maintain this pattern.',
+      'Excess Duration':   'Sleep duration exceeds optimal range. Prolonged sleep (>9 hrs) may indicate underlying fatigue, disrupted circadian rhythm, or sleep quality issues. Aim for 7–9 hours.',
+      'Hypersomnia Risk':  'Sleep duration exceeds 11 hours, which may indicate hypersomnia or significant health factors. Consult a sleep specialist if this is a consistent pattern.',
+    };
+
+    return {
+      score:     Math.max(0, Math.min(100, score)),
+      category:  category,
+      message:   messages[category],
+      badgeClass: badgeClass,
+      icon:      icon,
+    };
+  }
+
+  /* ──────────────────────────────────────────
+     UI UTILITIES
+  ────────────────────────────────────────── */
+  function showToast(message, type) {
+    var existing = document.getElementById('dtd-toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.id = 'dtd-toast';
+    var color = type === 'error'
+      ? 'bg-error dark:bg-tertiary-fixed text-white dark:text-black'
+      : 'bg-primary dark:bg-primary-fixed text-white dark:text-on-primary-fixed';
+    toast.className = 'fixed bottom-6 right-6 z-[100] px-5 py-3 rounded-lg shadow-xl text-sm font-semibold ' + color + ' transition-all duration-300 opacity-0 translate-y-2';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    requestAnimationFrame(function () {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+    });
+    setTimeout(function () {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(8px)';
+      setTimeout(function () { if (toast.parentNode) toast.remove(); }, 300);
+    }, 3500);
+  }
+
+  function setAnalyzeLoading(loading) {
+    var btn   = document.getElementById('analyze-btn');
+    var label = document.getElementById('analyze-label');
+    var icon  = document.getElementById('analyze-icon');
+    if (!btn) return;
+    btn.disabled = loading;
+    if (loading) {
+      if (label) label.textContent = 'Analyzing…';
+      if (icon)  { icon.textContent = 'progress_activity'; icon.classList.add('animate-spin'); }
+    } else {
+      if (label) label.textContent = 'Analyze Sleep';
+      if (icon)  { icon.textContent = 'analytics'; icon.classList.remove('animate-spin'); }
+    }
+  }
+
+  function showInputError(show) {
+    var err = document.getElementById('duration-error');
+    var inp = document.getElementById('duration');
+    if (!err || !inp) return;
+    if (show) {
+      err.classList.remove('hidden');
+      inp.classList.add('ring-2', 'ring-error/40', 'dark:ring-tertiary-fixed/40');
+    } else {
+      err.classList.add('hidden');
+      inp.classList.remove('ring-2', 'ring-error/40', 'dark:ring-tertiary-fixed/40');
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     UPDATE RECOVERY ANALYSIS SIDEBAR
+  ────────────────────────────────────────── */
+  function updateSidebar(result) {
+    var scoreEl    = document.getElementById('sleepScore');
+    var catEl      = document.getElementById('sleepCategory');
+    var msgEl      = document.getElementById('sleepMessage');
+    var progressEl = document.getElementById('sleepProgress');
+    var gapLabel   = document.getElementById('recoveryGapLabel');
+
+    if (scoreEl) {
+      scoreEl.textContent = result.score;
+      // Animate score count-up
+      var start = 0, end = result.score, duration = 600;
+      var step = Math.ceil(end / (duration / 16));
+      var counter = setInterval(function () {
+        start = Math.min(start + step, end);
+        scoreEl.textContent = start;
+        if (start >= end) clearInterval(counter);
+      }, 16);
+    }
+
+    if (catEl) {
+      catEl.className = 'inline-flex items-center px-4 py-1.5 rounded-full border ' + result.badgeClass;
+      catEl.innerHTML =
+        '<span class="material-symbols-outlined text-base mr-2">' + result.icon + '</span>' +
+        '<span class="text-sm font-bold uppercase tracking-tight">' + result.category + '</span>';
+    }
+
+    if (msgEl) msgEl.textContent = result.message;
+
+    if (progressEl) {
+      // Animate progress bar
+      progressEl.style.width = '0%';
+      requestAnimationFrame(function () {
+        setTimeout(function () { progressEl.style.width = result.score + '%'; }, 100);
+      });
+    }
+
+    if (gapLabel) {
+      var remaining = 100 - result.score;
+      gapLabel.textContent = remaining + '% Remaining';
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     RELATIVE TIME
+  ────────────────────────────────────────── */
+  function relativeTime(ts) {
+    var diff  = Date.now() - ts;
+    var mins  = Math.floor(diff / 60000);
+    var hours = Math.floor(diff / 3600000);
+    var days  = Math.floor(diff / 86400000);
+    if (mins < 2)   return 'Just now';
+    if (hours < 1)  return mins + ' min ago';
+    if (hours < 24) return hours + ' hr' + (hours > 1 ? 's' : '') + ' ago';
+    if (days === 1) return 'Yesterday';
+    if (days < 7)   return days + ' days ago';
+    var d = new Date(ts);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER RECENT RECORDS
+  ────────────────────────────────────────── */
+  function renderRecords(records) {
+    var container = document.getElementById('recentRecords');
+    var skeleton  = document.getElementById('records-skeleton');
+    var countEl   = document.getElementById('records-count');
+    if (!container) return;
+
+    // Remove skeleton
+    if (skeleton) skeleton.remove();
+
+    if (!records || records.length === 0) {
+      container.innerHTML =
+        '<div class="text-center py-8">' +
+          '<span class="material-symbols-outlined text-4xl text-outline dark:text-neutral-700 mb-3 block opacity-50">bedtime</span>' +
+          '<p class="text-sm text-on-surface-variant dark:text-neutral-500">No sleep records yet. Log your first night above.</p>' +
+        '</div>';
+      if (countEl) countEl.textContent = '';
+      return;
+    }
+
+    if (countEl) countEl.textContent = records.length + ' entr' + (records.length === 1 ? 'y' : 'ies');
+
+    var BADGE = {
+      'Optimal Recovery':  { bg: 'bg-primary-container dark:bg-primary-fixed/20',   text: 'text-on-primary-container dark:text-primary-fixed',       icon: 'bg-primary-container dark:bg-primary-fixed/20',  sym: 'check_circle' },
+      'Moderate Recovery': { bg: 'bg-secondary-container dark:bg-neutral-800',       text: 'text-on-secondary-container dark:text-neutral-300',        icon: 'bg-secondary-container dark:bg-neutral-800',     sym: 'schedule'     },
+      'Poor Recovery':     { bg: 'bg-orange-100 dark:bg-orange-900/20',              text: 'text-orange-700 dark:text-orange-400',                     icon: 'bg-orange-100 dark:bg-orange-900/20',            sym: 'do_not_disturb_on' },
+      'Severe Deficit':    { bg: 'bg-red-100 dark:bg-red-900/20',                   text: 'text-error dark:text-red-400',                             icon: 'bg-red-100 dark:bg-red-900/20',                  sym: 'warning' },
+      'Excess Duration':   { bg: 'bg-secondary-container dark:bg-neutral-800',       text: 'text-on-secondary-container dark:text-neutral-300',        icon: 'bg-secondary-container dark:bg-neutral-800',     sym: 'info' },
+      'Hypersomnia Risk':  { bg: 'bg-orange-100 dark:bg-orange-900/20',              text: 'text-orange-700 dark:text-orange-400',                     icon: 'bg-orange-100 dark:bg-orange-900/20',            sym: 'warning' },
+    };
+
+    var html = records.slice(0, 7).map(function (r) {
+      var style = BADGE[r.category] || BADGE['Moderate Recovery'];
+      var shortCat = r.category.split(' ')[0];
+      return (
+        '<div class="bg-surface-container-lowest dark:bg-neutral-800/60 flex items-center justify-between p-4 rounded-lg border border-slate-100 dark:border-neutral-700/50 hover:border-primary/20 dark:hover:border-primary-fixed/20 transition-colors">' +
+          '<div class="flex items-center space-x-4">' +
+            '<div class="' + style.icon + ' w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">' +
+              '<span class="material-symbols-outlined ' + style.text + ' text-sm">' + style.sym + '</span>' +
+            '</div>' +
+            '<div>' +
+              '<p class="font-headline font-bold text-on-surface dark:text-neutral-100">' + r.sleep + ' hrs</p>' +
+              '<p class="text-xs text-on-surface-variant dark:text-neutral-500">' + relativeTime(r.date) + '</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="flex items-center gap-3">' +
+            '<span class="text-lg font-headline font-bold text-on-surface dark:text-neutral-100">' + r.score + '</span>' +
+            '<span class="px-2.5 py-1 rounded-full ' + style.bg + ' ' + style.text + ' text-[10px] font-bold uppercase tracking-tight">' + shortCat + '</span>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    container.innerHTML = html;
+  }
+
+  /* ──────────────────────────────────────────
+     COMPUTE & SHOW WEEKLY AVERAGES
+  ────────────────────────────────────────── */
+  function updateWeeklyStats(records) {
+    var block = document.getElementById('weekly-avg-block');
+    if (!block || !records || records.length === 0) return;
+
+    var now   = Date.now();
+    var week  = 7 * 24 * 60 * 60 * 1000;
+    var recent = records.filter(function (r) { return (now - r.date) < week; });
+
+    if (recent.length < 2) {
+      block.classList.add('hidden');
+      return;
+    }
+
+    var avgScore = Math.round(recent.reduce(function (s, r) { return s + r.score; }, 0) / recent.length);
+    var avgHours = (recent.reduce(function (s, r) { return s + r.sleep; }, 0) / recent.length).toFixed(1);
+
+    document.getElementById('weekly-avg-score').textContent = avgScore;
+    document.getElementById('weekly-avg-hours').textContent = avgHours + ' hrs';
+    block.classList.remove('hidden');
+  }
+
+  /* ──────────────────────────────────────────
+     LOCAL STORAGE (cache / fallback)
+  ────────────────────────────────────────── */
+  var LS_KEY = 'dtd_sleep_log';
+
+  function lsLoad() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch (e) { return []; }
+  }
+
+  function lsSave(records) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(records.slice(0, 30))); } catch (e) {}
+  }
+
+  /* ──────────────────────────────────────────
+     SAVE: Firestore (primary) + localStorage (always)
+     If Firestore throws (rules/offline) → localStorage only.
+  ────────────────────────────────────────── */
+  async function saveSleepEntry(hours, result) {
+    // Build the local entry first (ms timestamp for offline use)
+    var localEntry = {
+      sleep:    hours,
+      score:    result.score,
+      category: result.category,
+      date:     Date.now(),
+    };
+
+    // Always persist locally so data survives even if Firestore is unavailable
+    var cached = lsLoad();
+    cached.unshift(localEntry);
+    lsSave(cached);
+
+    // Attempt cloud sync
+    try {
+      var ref = sleepRef();
+      await ref.add({
+        sleep:    hours,
+        score:    result.score,
+        category: result.category,
+        date:     firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (err) {
+      // Firestore unavailable — local data already saved above
+      console.warn('[Sleep] Firestore write skipped (rules/offline):', err.code || err.message);
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     LOAD: Firestore (primary) → localStorage fallback
+  ────────────────────────────────────────── */
+  async function loadSleepRecords() {
+    try {
+      var ref  = sleepRef();
+      var snap = await ref.orderBy('date', 'desc').limit(30).get();
+      if (!snap.empty) {
+        var records = snap.docs.map(function (d) {
+          var data = d.data();
+          return {
+            id:       d.id,
+            sleep:    data.sleep,
+            score:    data.score,
+            category: data.category,
+            date:     data.date ? data.date.toMillis() : Date.now(),
+          };
+        });
+        // Sync cloud data into local cache
+        lsSave(records);
+        return records;
+      }
+    } catch (err) {
+      // Permission denied or offline — use cached data silently
+      console.warn('[Sleep] Firestore read skipped, using local cache:', err.code || err.message);
+    }
+    // Fallback: localStorage
+    return lsLoad();
+  }
+
+  /* ──────────────────────────────────────────
+     THEME SYSTEM (mirrors app.js wireThemeToggle)
+  ────────────────────────────────────────── */
+  function wireTheme() {
+    // Apply saved preference immediately (before paint)
+    var saved = localStorage.getItem('dtd_theme');
+    if (saved === 'dark')  document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      document.documentElement.classList.toggle('dark');
+      var isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('dtd_theme', isDark ? 'dark' : 'light');
+      // Update icon
+      var icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) icon.textContent = isDark ? 'dark_mode' : 'light_mode';
+    });
+    // Set correct icon on load
+    var initIcon = btn.querySelector('.material-symbols-outlined');
+    if (initIcon) {
+      initIcon.textContent = document.documentElement.classList.contains('dark') ? 'dark_mode' : 'light_mode';
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     WIRE LOGOUT & NAV USERNAME
+  ────────────────────────────────────────── */
+  function wireNavControls(user) {
+    var nameEl = document.getElementById('nav-username');
+    if (nameEl && user) {
+      var display = user.displayName
+        || user.email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      nameEl.textContent = display;
+    }
+    var logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn && window.Auth) {
+      logoutBtn.addEventListener('click', function () { window.Auth.logout(); });
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     MAIN PAGE INIT (called after auth confirmed)
+  ────────────────────────────────────────── */
+  async function initSleepPage(user) {
+    // Wire controls
+    wireNavControls(user);
+
+    // Load records — Firestore with silent localStorage fallback
+    var records = [];
+    try {
+      records = await loadSleepRecords();
+    } catch (err) {
+      // Unrecoverable error (e.g. auth lost mid-session)
+      console.error('[Sleep] Unexpected load error:', err);
+      records = lsLoad(); // still attempt local cache
+    }
+    renderRecords(records);
+    updateWeeklyStats(records);
+
+    // Show last entry in sidebar if records exist
+    if (records.length > 0) {
+      var latest = records[0];
+      var latestResult = analyzeSleep(latest.sleep);
+      latestResult.score    = latest.score;    // use stored score, not re-computed
+      latestResult.category = latest.category;
+      updateSidebar(latestResult);
+    }
+
+    // Wire form submission
+    var form = document.getElementById('sleep-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      var input = document.getElementById('duration');
+      var hours = input ? parseFloat(input.value) : NaN;
+
+      // Validate
+      if (isNaN(hours) || hours < 0.5 || hours > 24) {
+        showInputError(true);
+        return;
+      }
+      showInputError(false);
+
+      setAnalyzeLoading(true);
+
+      try {
+        var result = analyzeSleep(hours);
+
+        // Update sidebar immediately (optimistic)
+        updateSidebar(result);
+
+        // Persist (Firestore + local cache)
+        await saveSleepEntry(hours, result);
+
+        // Reload from source of truth (Firestore or local)
+        var fresh = await loadSleepRecords();
+        renderRecords(fresh);
+        updateWeeklyStats(fresh);
+
+        showToast('Logged ✓  Score ' + result.score + '/100 · ' + result.category, 'success');
+        if (input) input.value = '';
+
+      } catch (err) {
+        console.error('[Sleep] Failed to save entry:', err);
+        showToast('Failed to save sleep entry. Please try again.', 'error');
+      } finally {
+        setAnalyzeLoading(false);
+      }
+    });
+
+    // Clear validation error on input change
+    var input = document.getElementById('duration');
+    if (input) {
+      input.addEventListener('input', function () { showInputError(false); });
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     BOOT
+  ────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', function () {
+    // Apply theme before auth resolves (prevents flash)
+    wireTheme();
+
+    // Auth guard — identical pattern to dashboard/history/insights
+    window.Auth.requireAuth(function (user) {
+      document.body.style.opacity = '1';
+      // Initialise chatbot with authenticated user context
+      if (window.HealthBot) window.HealthBot.init(user);
+      initSleepPage(user).catch(function (err) {
+        console.error('[Sleep] initSleepPage error:', err);
+      });
+    });
+  });
+
+})();
+</script>
+<script src="chatbot.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLEEP PROTOCOL MODAL
+═══════════════════════════════════════════════════════ -->
+<div id="protocol-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
+  <!-- Backdrop -->
+  <div onclick="closeProtocolModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+  <!-- Panel -->
+  <div class="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl">
+
+    <!-- Header -->
+    <div class="sticky top-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md px-6 py-5 border-b border-slate-100 dark:border-neutral-800 flex justify-between items-start">
+      <div>
+        <p class="text-[10px] font-bold tracking-[0.2em] text-primary dark:text-primary-fixed uppercase mb-1">Clinical Guidelines</p>
+        <h2 class="text-xl font-headline font-bold text-slate-900 dark:text-neutral-50">The Science of Rest Protocol</h2>
+      </div>
+      <button onclick="closeProtocolModal()" class="ml-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-neutral-400 transition-colors flex-shrink-0">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 py-6 space-y-6">
+
+      <!-- Optimal Duration -->
+      <section>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed" style="font-variation-settings:'FILL' 1">schedule</span>
+          <h3 class="font-headline font-bold text-slate-900 dark:text-neutral-100">Optimal Sleep Duration</h3>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-orange-50 dark:bg-orange-900/10 rounded-xl p-3 text-center border border-orange-100 dark:border-orange-900/30">
+            <p class="text-lg font-bold font-headline text-orange-600 dark:text-orange-400">6–7h</p>
+            <p class="text-[10px] text-slate-500 dark:text-neutral-400 mt-0.5 uppercase tracking-wide">Minimum</p>
+          </div>
+          <div class="bg-primary-container/30 dark:bg-primary-fixed/10 rounded-xl p-3 text-center border border-primary/20 dark:border-primary-fixed/20">
+            <p class="text-lg font-bold font-headline text-primary dark:text-primary-fixed">7–9h</p>
+            <p class="text-[10px] text-slate-500 dark:text-neutral-400 mt-0.5 uppercase tracking-wide">Optimal</p>
+          </div>
+          <div class="bg-secondary-container/20 dark:bg-neutral-800 rounded-xl p-3 text-center border border-secondary/10 dark:border-neutral-700">
+            <p class="text-lg font-bold font-headline text-slate-500 dark:text-neutral-400">&gt;9h</p>
+            <p class="text-[10px] text-slate-500 dark:text-neutral-400 mt-0.5 uppercase tracking-wide">Excess</p>
+          </div>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-neutral-400 mt-3 leading-relaxed">Adults require 7–9 hours for full cognitive and physical recovery. Consistently sleeping under 6 hours increases cortisol, impairs glucose metabolism, and doubles cardiovascular risk over 10 years.</p>
+      </section>
+
+      <div class="border-t border-slate-100 dark:border-neutral-800"></div>
+
+      <!-- Sleep Stages -->
+      <section>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed" style="font-variation-settings:'FILL' 1">neurology</span>
+          <h3 class="font-headline font-bold text-slate-900 dark:text-neutral-100">Sleep Architecture</h3>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-neutral-800">
+            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-bold text-blue-600 dark:text-blue-400">N1</span>
+            </div>
+            <div><p class="text-sm font-semibold text-slate-800 dark:text-neutral-200">Light Sleep</p><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Transition stage. Body temperature drops, muscles relax. 5% of total sleep.</p></div>
+          </div>
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-neutral-800">
+            <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">N2</span>
+            </div>
+            <div><p class="text-sm font-semibold text-slate-800 dark:text-neutral-200">Core Sleep</p><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Memory consolidation begins. Heart rate and breathing slow. 50% of total sleep.</p></div>
+          </div>
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-neutral-800">
+            <div class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-bold text-purple-600 dark:text-purple-400">N3</span>
+            </div>
+            <div><p class="text-sm font-semibold text-slate-800 dark:text-neutral-200">Deep Sleep (SWS)</p><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Tissue repair, immune strengthening, glymphatic waste clearance. Most restorative — 20% of sleep.</p></div>
+          </div>
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-neutral-800">
+            <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-bold text-green-600 dark:text-green-400">REM</span>
+            </div>
+            <div><p class="text-sm font-semibold text-slate-800 dark:text-neutral-200">REM Sleep</p><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Emotional processing, creativity, long-term memory encoding. Increases across the night — 25% of sleep.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="border-t border-slate-100 dark:border-neutral-800"></div>
+
+      <!-- Pre-Sleep Routine -->
+      <section>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed" style="font-variation-settings:'FILL' 1">bedtime</span>
+          <h3 class="font-headline font-bold text-slate-900 dark:text-neutral-100">Pre-Sleep Protocol (60 min)</h3>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-300">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-base">check_circle</span>
+            <span>Dim lights 1 hour before bed — melatonin is light-sensitive</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-300">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-base">check_circle</span>
+            <span>No screens 45 min before sleep (blue light suppresses melatonin by 50%)</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-300">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-base">check_circle</span>
+            <span>Keep room at 65–68°F (18–20°C) — core temperature must drop to initiate sleep</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-300">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-base">check_circle</span>
+            <span>No caffeine after 2PM — half-life of caffeine is 5–7 hours</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-neutral-300">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-base">check_circle</span>
+            <span>Fixed wake time every day (±30 min) anchors your circadian clock</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="border-t border-slate-100 dark:border-neutral-800"></div>
+
+      <!-- Warning signs -->
+      <section>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-tertiary dark:text-tertiary-fixed" style="font-variation-settings:'FILL' 1">warning</span>
+          <h3 class="font-headline font-bold text-slate-900 dark:text-neutral-100">When to Seek Help</h3>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-neutral-400 leading-relaxed">Consult a sleep specialist if you experience: difficulty falling asleep for &gt;30 min on 3+ nights/week, waking frequently, excessive daytime sleepiness, or if a partner reports snoring and pauses in breathing (possible sleep apnea).</p>
+      </section>
+
+    </div><!-- /content -->
+  </div><!-- /panel -->
+</div><!-- /modal -->
+
+<script>
+function openProtocolModal(e) {
+  if (e) e.preventDefault();
+  var m = document.getElementById('protocol-modal');
+  m.classList.remove('hidden');
+  m.style.opacity = '0';
+  setTimeout(function(){ m.style.opacity = '1'; }, 10);
+  document.body.style.overflow = 'hidden';
+}
+function closeProtocolModal() {
+  var m = document.getElementById('protocol-modal');
+  m.style.opacity = '0';
+  setTimeout(function(){ m.classList.add('hidden'); document.body.style.overflow = ''; }, 250);
+}
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeProtocolModal(); });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sleep Tracking - Debug the Diet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#6bff8f",
+                        "on-surface": "#2b3437",
+                        "surface-container-high": "#e2e9ec",
+                        "on-primary-fixed": "#004a1d",
+                        "surface-tint": "#006e2f",
+                        "on-tertiary-fixed-variant": "#3b0003",
+                        "primary-dim": "#006028",
+                        "surface": "#f8f9fa",
+                        "on-background": "#2b3437",
+                        "secondary-container": "#d9e3f6",
+                        "inverse-surface": "#0c0f10",
+                        "on-secondary": "#f8f8ff",
+                        "secondary-dim": "#4a5463",
+                        "on-primary-container": "#005f28",
+                        "on-error-container": "#742410",
+                        "outline-variant": "#abb3b7",
+                        "on-secondary-container": "#485262",
+                        "on-tertiary-fixed": "#000000",
+                        "primary-fixed": "#6bff8f",
+                        "surface-container-low": "#f1f4f6",
+                        "tertiary": "#ba1b24",
+                        "outline": "#737c7f",
+                        "surface-container-highest": "#dbe4e7",
+                        "on-secondary-fixed-variant": "#525c6c",
+                        "error": "#9e422c",
+                        "surface-variant": "#dbe4e7",
+                        "secondary-fixed": "#d9e3f6",
+                        "on-secondary-fixed": "#36404f",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#e4ffe2",
+                        "inverse-on-surface": "#9b9d9e",
+                        "surface-dim": "#d1dce0",
+                        "inverse-primary": "#6bff8f",
+                        "on-tertiary": "#fff7f6",
+                        "error-container": "#fe8b70",
+                        "tertiary-dim": "#a9081a",
+                        "surface-container": "#eaeff1",
+                        "tertiary-fixed-dim": "#ec4142",
+                        "error-dim": "#5c1202",
+                        "surface-bright": "#f8f9fa",
+                        "on-tertiary-container": "#1f0001",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed": "#fd4e4d",
+                        "on-error": "#fff7f6",
+                        "on-surface-variant": "#586064",
+                        "primary-fixed-dim": "#5bf083",
+                        "secondary-fixed-dim": "#cbd5e8",
+                        "secondary": "#566070",
+                        "on-primary-fixed-variant": "#006a2d",
+                        "primary": "#006e2f"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; }
+        h1, h2, h3, .display-num { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .clinical-shadow {
+            box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-neutral-900/95 backdrop-blur-md shadow-none font-manrope antialiased tracking-tight">
+<div class="flex justify-between items-center h-16 px-6 md:px-12 max-w-7xl mx-auto w-full">
+<div class="text-2xl font-bold tracking-tighter text-primary-fixed">Debug the Diet</div>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="text-neutral-400 hover:text-neutral-200 transition-colors font-medium" href="#">Dashboard</a>
+<a class="text-neutral-400 hover:text-neutral-200 transition-colors font-medium" href="#">History</a>
+<a class="text-neutral-400 hover:text-neutral-200 transition-colors font-medium" href="#">Insights</a>
+<a class="text-primary-fixed font-extrabold relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-1 after:bg-primary-fixed after:rounded-full" href="#">Sleep</a>
+</nav>
+<div class="flex items-center space-x-4">
+<button class="material-symbols-outlined text-neutral-400 hover:text-neutral-200 transition-colors active:scale-95">notifications</button>
+<button class="material-symbols-outlined text-neutral-400 hover:text-neutral-200 transition-colors active:scale-95">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-neutral-800">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnlS3Kp46nGQpC4Ki29u1UAwCKid0-eaeveQ1SP_snR76eQNVr5C1KE0UWouUz8HQaRjVZ9H7eRdQuCCS-EDBSzj0ljZgS2qoY0E99uAXPbvEkWP9uOL9_AH6ZtoDWgfblk_jtdGWb7T3Ce5y_tCYz18d5kDHhtx5y860clkxvDZPPrv5K2hllle3DrWoNL4_x0U6GuyfEEC98BaQo4RaaaCY2rTjxhahUjpMOiHfRll6-nlnQZPxrr0mP_6TnqMruImVGPQmwhQ"/>
+</div>
+</div>
+</div>
+<div class="bg-neutral-800/50 h-[1px] w-full absolute bottom-0"></div>
+</header>
+<main class="pt-24 pb-12 px-6 max-w-7xl mx-auto min-h-screen">
+<!-- Page Header -->
+<header class="mb-12">
+<h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter text-neutral-50 mb-2">Sleep Tracking</h1>
+<p class="text-neutral-400 text-lg max-w-2xl leading-relaxed">Log your sleep and get instant feedback on recovery quality with clinical precision.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Column: Tracking and Records -->
+<div class="lg:col-span-7 space-y-8">
+<!-- Main Tracking Card (Tonight's Assessment) -->
+<section class="bg-neutral-900 rounded-xl clinical-shadow p-8 border border-neutral-800/50">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-xl font-bold text-neutral-50">Tonight's Assessment</h2>
+<span class="material-symbols-outlined text-primary-fixed bg-primary-fixed/10 p-2 rounded-lg" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+<form class="space-y-8">
+<div class="space-y-3">
+<label class="block text-[10px] font-bold tracking-widest text-neutral-400 uppercase" for="duration">SLEEP DURATION (HOURS)</label>
+<div class="relative">
+<input class="w-full bg-neutral-800/50 border-none rounded-lg h-14 px-4 text-xl font-headline font-bold focus:ring-2 focus:ring-primary-fixed transition-all outline-none text-neutral-50 placeholder-neutral-700" id="duration" placeholder="0.0" step="0.5" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium">hrs</span>
+</div>
+</div>
+<button class="w-full bg-primary-fixed text-on-primary-fixed font-headline font-bold py-4 rounded-lg flex items-center justify-center space-x-2 active:scale-[0.98] transition-all shadow-lg shadow-primary-fixed/20 hover:bg-primary-fixed-dim" type="button">
+<span>Analyze Sleep</span>
+<span class="material-symbols-outlined text-lg">analytics</span>
+</button>
+</form>
+</section>
+<!-- Recent Records Section -->
+<section class="bg-neutral-900/40 rounded-xl p-8 border border-neutral-800/50">
+<h3 class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase mb-6">Recent Records</h3>
+<div class="space-y-4">
+<div class="bg-neutral-900/80 flex items-center justify-between p-4 rounded-lg border border-neutral-800/30">
+<div class="flex items-center space-x-4">
+<div class="bg-primary-fixed/20 w-10 h-10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-neutral-50">7.5 hrs</p>
+<p class="text-[10px] text-neutral-500 uppercase font-bold tracking-wide">Last Night</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-primary-fixed/10 text-primary-fixed text-[10px] font-bold uppercase tracking-tight">Optimal</span>
+</div>
+<div class="bg-neutral-900/80 flex items-center justify-between p-4 rounded-lg border border-neutral-800/30">
+<div class="flex items-center space-x-4">
+<div class="bg-neutral-800 w-10 h-10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-neutral-400 text-sm">schedule</span>
+</div>
+<div>
+<p class="font-bold text-neutral-50">6.2 hrs</p>
+<p class="text-[10px] text-neutral-500 uppercase font-bold tracking-wide">2 days ago</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-neutral-800 text-neutral-400 text-[10px] font-bold uppercase tracking-tight">Moderate</span>
+</div>
+<div class="bg-neutral-900/80 flex items-center justify-between p-4 rounded-lg border border-neutral-800/30">
+<div class="flex items-center space-x-4">
+<div class="bg-primary-fixed/20 w-10 h-10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-neutral-50">8.1 hrs</p>
+<p class="text-[10px] text-neutral-500 uppercase font-bold tracking-wide">3 days ago</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-primary-fixed/10 text-primary-fixed text-[10px] font-bold uppercase tracking-tight">Optimal</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Analysis and Editorial -->
+<div class="lg:col-span-5 space-y-8">
+<!-- Recovery Analysis Card -->
+<section class="bg-neutral-900 rounded-xl clinical-shadow border border-primary-fixed/10 overflow-hidden">
+<div class="bg-primary-fixed/5 p-8 border-b border-neutral-800">
+<h3 class="text-[10px] font-bold tracking-widest text-primary-fixed uppercase mb-6">RECOVERY ANALYSIS</h3>
+<div class="flex items-baseline space-x-2 mb-1">
+<span class="text-7xl font-headline font-extralight text-primary-fixed tracking-tighter">85</span>
+<span class="text-xl font-headline font-medium text-neutral-500">/100</span>
+</div>
+<p class="text-neutral-400 font-medium">Daily Sleep Score</p>
+</div>
+<div class="p-8 space-y-6">
+<div class="inline-flex items-center px-4 py-1.5 rounded-full bg-primary-fixed/10 text-primary-fixed border border-primary-fixed/20">
+<span class="material-symbols-outlined text-base mr-2" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Optimal Recovery</span>
+</div>
+<div class="space-y-4">
+<p class="text-neutral-300 leading-relaxed italic text-sm">
+                                "Your circadian alignment is excellent. The 7.5-hour window provided enough time for complete REM cycles, indicating high neural restoration."
+                            </p>
+<div class="h-2 w-full bg-neutral-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed rounded-full w-[85%] shadow-[0_0_10px_rgba(107,255,143,0.3)]"></div>
+</div>
+<div class="flex justify-between text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
+<span>RECOVERY GAP</span>
+<span>15% REMAINING</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Editorial Insight Card (The Science of Rest) -->
+<section class="relative rounded-xl overflow-hidden aspect-[4/3] flex flex-col justify-end p-8 text-white border border-neutral-800">
+<img alt="Restorative Sleep Context" class="absolute inset-0 w-full h-full object-cover grayscale brightness-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBanrqlja6Y8HbJ6z4wo-A5nUoiZKal82P3PCzRuhSGQ91dBj-ghTxVtPVpuY5tEZxxVQeyTmbGErQX8jtKoNRDme4QncjCmokNjFu_baIDXlQCZUPjKRXE22e0Zm6vVVnzYRhLt6cUGvpz7cc8QxyZMrT34AWPZMlJbfM8W4TqbTb_LWhewRsA2HWGOL3Spl3BAJ0vplqRYEJLWNAxTpiD0PpaehBjCBhUpMMAs8Y6GSgnWtZdV-Kv5rUnJzCbzitBEcEfs3QHpA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent"></div>
+<div class="relative z-10">
+<h4 class="text-2xl font-bold mb-2">The Science of Rest</h4>
+<p class="text-neutral-300 text-sm leading-relaxed mb-4">Deep sleep acts as a biological "debug" mode, clearing metabolic waste from the brain and repairing tissue.</p>
+<a class="text-primary-fixed font-bold text-[10px] uppercase tracking-widest inline-flex items-center group" href="#">
+                            Read Protocol 
+                            <span class="material-symbols-outlined ml-1 text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</section>
+</div>
+</div>
+<!-- Curated Insights (From SCREEN_25) -->
+</main>
+<!-- Footer -->
+<footer class="w-full border-t border-neutral-800 bg-neutral-900 mt-12">
+<div class="flex flex-col md:flex-row justify-between items-center py-10 px-6 max-w-7xl mx-auto w-full opacity-80">
+<div class="font-bold text-neutral-50 mb-6 md:mb-0">
+                © 2024 Debug the Diet. Clinical Precision Nutrition.
+            </div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="text-[11px] font-manrope uppercase tracking-widest text-neutral-500 hover:text-primary-fixed transition-colors" href="#">Clinical Guidelines</a>
+<a class="text-[11px] font-manrope uppercase tracking-widest text-neutral-500 hover:text-primary-fixed transition-colors" href="#">Privacy Protocol</a>
+<a class="text-[11px] font-manrope uppercase tracking-widest text-neutral-500 hover:text-primary-fixed transition-colors" href="#">Terms of Service</a>
+<a class="text-[11px] font-manrope uppercase tracking-widest text-neutral-500 hover:text-primary-fixed transition-colors" href="#">Professional Support</a>
+</div>
+</div>
+</footer>
+</body></html>
