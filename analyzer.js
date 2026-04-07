@@ -265,3 +265,4 @@ async function calculateNutrition(foodItems) {
 
 // Export
 window.Analyzer = { parseMealInput, lookupFood, calculateNutrition };
+

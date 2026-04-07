@@ -464,3 +464,4 @@
   window.App = { deleteMealEntry, analyzeMeal };
 
 })();
+

@@ -16,3 +16,4 @@ window._auth = firebase.auth();
 window._db   = firebase.firestore();
 
 console.log('[Firebase] Initialized ✓');
+

@@ -561,3 +561,4 @@ window.UI = {
   renderCuratedSummary,
   updateCuratedSummary,
 };
+

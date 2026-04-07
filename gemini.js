@@ -70,3 +70,4 @@ Rules:
 }
 
 window.Gemini = { generateCuratedSummary };
+

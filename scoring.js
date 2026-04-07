@@ -160,3 +160,4 @@ function getMacroPercentages(nutrition) {
 
 // Export
 window.Scoring = { calculateScore, getRating, getScoreBadge, generateInsights, getMacroPercentages };
+

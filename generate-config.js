@@ -20,3 +20,4 @@ window.CONFIG = {
 
 fs.writeFileSync('config.js', content, 'utf8');
 console.log('[generate-config] config.js written successfully \u2713');
+
